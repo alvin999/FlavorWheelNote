@@ -6,13 +6,26 @@
     <title data-i18n="app_title">Flavor Wheel Note | 風味輪筆記</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        /* 定義專案特定的莫蘭迪色系 */
-        :root {
-            --color-morandi-1: #cdb7b5; /* 花香/Floral */
-            --color-morandi-2: #c6b6a7; /* 水果/Fruity */
-            /* 更多顏色請在 CSS 或 JS 中擴充 */
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        // 1. 檢查 localStorage 中是否有 'theme' 設置
+        // 2. 如果沒有，則檢查用戶系統的偏好 (prefers-color-scheme)
+        // 3. 根據結果在 <html> 元素上添加或移除 'dark' class
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark'); // 如果是根據系統偏好，則明確設定
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
         }
+    </script>
+    <script>
+        // 載入 Tailwind CDN 之後，再設定其 config
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <style> 
         /* D3.js 元素的通用樣式 */
         .flavor-arc {
             stroke: #fff;
@@ -32,94 +45,106 @@
             fill: #fff; /* 改為白色文字 */
             pointer-events: none; /* Don't block clicks on arcs */
             /* text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.8); /* 移除文字陰影 */
-            font-size: 20px; /* 設定統一的字體大小為 20px */
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans dark:bg-[#282828] transition-colors duration-300">
 
     <div id="app" class="max-w-screen-2xl mx-auto p-4 md:p-8">
 
         <header class="mb-6 flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-700" data-i18n="app_title">Flavor Wheel Note</h1>
-            <div class="flex space-x-2 mt-4 md:mt-0">
+            <h1 class="text-3xl font-bold text-gray-700 dark:text-[#ebdbb2]" data-i18n="app_title">Flavor Wheel Note</h1>
+            <div class="flex flex-wrap justify-center md:justify-end gap-2 mt-4 md:mt-0">
                 <div id="drink-switch" class="flex p-1 bg-white rounded-lg shadow">
-                    <button data-type="coffee" data-i18n="coffee_button" class="p-2 rounded-md bg-amber-200 text-gray-800 font-semibold transition">☕ 咖啡</button>
+                    <button data-type="coffee" data-i18n="coffee_button" class="p-2 rounded-md bg-[#fe8019] text-white font-semibold transition">☕ 咖啡</button>
                     <button data-type="tea" data-i18n="tea_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🍵 茶</button>
                     <button data-type="luxury" data-i18n="luxury_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💎 奢華</button>
                 </div>
-                <div id="lang-switch" class="flex p-1 bg-white rounded-lg shadow">
-                    <button data-lang="zh" data-i18n="lang_zh_button" class="p-2 rounded-md bg-teal-200 text-gray-800 font-semibold transition">中</button>
+                <div id="lang-switch" class="flex p-1 bg-white rounded-lg shadow shrink-0">
+                    <button data-lang="zh" data-i18n="lang_zh_button" class="p-2 rounded-md bg-[#458588] text-white font-semibold transition">中</button>
                     <button data-lang="en" data-i18n="lang_en_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">EN</button>
                     <button data-lang="jp" data-i18n="lang_jp_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">日</button>
                 </div>
-                <div id="theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2">
-                    <button data-theme="default" data-i18n="theme_default_button" class="p-2 rounded-md bg-pink-200 text-gray-800 font-semibold transition">🎨 Default</button>
+                <div id="theme-switch" class="flex p-1 bg-white rounded-lg shadow">
+                    <button data-theme="default" data-i18n="theme_default_button" class="p-2 rounded-md bg-[#d3869b] text-white font-semibold transition">🎨 Default</button>
                     <button data-theme="catppuccin" data-i18n="theme_catppuccin_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Catppuccin</button>
                     <button data-theme="gruvbox" data-i18n="theme_gruvbox_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Gruvbox</button>
                 </div>
                 <div id="luxury-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden">
-                    <button data-theme="luxury_gold" data-i18n="theme_luxury_gold_button" class="p-2 rounded-md bg-yellow-200 text-gray-800 font-semibold transition">⚜️ 奢華金</button>
+                    <button data-theme="luxury_gold" data-i18n="theme_luxury_gold_button" class="p-2 rounded-md bg-[#fabd2f] text-[#3c3836] font-semibold transition">⚜️ 奢華金</button>
                     <button data-theme="rose_gold" data-i18n="theme_rose_gold_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🌹 玫瑰金</button>
                     <button data-theme="platinum" data-i18n="theme_platinum_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💍 鉑金</button>
+                </div>
+                <div id="dark-mode-switch" class="flex p-1 bg-white rounded-lg shadow">
+                    <button id="dark-mode-toggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition">
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM5.05 14.464l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 00-1.414-1.414zM1.464 6.536a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </header>
                 
-        <main class="grid grid-cols-1 gap-8">
-            <div class="relative bg-white rounded-xl shadow-lg flavor-wheel-container">
+        <main class="grid grid-cols-1 gap-8 items-start">
+            <div class="relative bg-white rounded-xl shadow-lg flavor-wheel-container dark:bg-[#3c3836] overflow-hidden">
                 <div id="flavor-wheel">
                     </div>
-                <div id="center-display" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center w-48">
-                    <p id="current-category" class="text-sm text-gray-500"></p> 
-                    <p id="current-flavor" class="text-xl font-bold text-gray-800"></p> 
-                    <p class="text-xs mt-2 text-gray-400" data-i18n="click_to_select_flavor">點擊選擇風味</p>
+                <div id="center-display" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center px-4">
+                    <p id="current-category" class="text-sm text-gray-500 dark:text-[#a89984]"></p> 
+                    <p id="current-flavor" class="font-bold text-gray-800 dark:text-[#ebdbb2]"></p> 
+                    <p class="text-xs mt-2 text-gray-400 dark:text-[#928374]" data-i18n="click_to_select_flavor">點擊選擇風味</p>
                 </div>
             </div>
 
             <div class="space-y-6">
 
-                <div class="bg-white p-5 rounded-xl shadow-lg">
-                    <h2 class="text-xl font-semibold mb-3 text-gray-700" data-i18n="selected_flavors_title">選取風味列表</h2>
-                    <div id="selected-flavors" class="min-h-[50px] p-3 border rounded-lg bg-gray-50 space-y-1">
-                        <p class="text-sm text-gray-400" data-i18n="no_flavors_selected">尚未選取任何風味...</p>
+                <div class="bg-white p-5 rounded-xl shadow-lg dark:bg-[#3c3836]">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-lg font-semibold text-gray-700 dark:text-[#ebdbb2]" data-i18n="selected_flavors_title">選取風味列表</h4>
+                        <button id="reset-flavors-btn" class="text-sm text-gray-500 hover:text-red-600 dark:text-[#a89984] dark:hover:text-[#fb4934] transition hidden" data-i18n="reset_flavors_button">重設列表</button>
+                    </div>
+                    <div id="selected-flavors" class="min-h-[50px] p-3 border rounded-lg bg-gray-50 space-y-1 dark:bg-[#282828] dark:border-[#665c54]">
+                        <p class="text-sm text-gray-400 dark:text-[#a89984]" data-i18n="no_flavors_selected">尚未選取任何風味...</p>
                     </div>
 
-                    <h2 class="text-xl font-semibold mt-4 mb-3 text-gray-700" data-i18n="generate_note_title">生成筆記</h2>
+                    <h2 class="text-xl font-semibold mt-4 mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="generate_note_title">生成筆記</h2>
                     
                     <div id="output-mode-switch" class="flex mb-3 p-1 bg-gray-100 rounded-lg">
-                        <button data-mode="list" data-i18n="output_mode_list" class="flex-1 p-2 rounded-md bg-lime-200 text-gray-800 text-sm font-medium">1️⃣ 純風味文字</button>
-                        <button data-mode="note" data-i18n="output_mode_note" class="flex-1 p-2 rounded-md text-gray-500 text-sm hover:bg-white">2️⃣ 社群分享模式</button>
+                        <button data-mode="list" data-i18n="output_mode_list" class="flex-1 p-2 rounded-md bg-[#8ec07c] text-[#3c3836] text-sm font-medium">1️⃣ 純風味文字</button>
+                        <button data-mode="note" data-i18n="output_mode_note" class="flex-1 p-2 rounded-md text-gray-500 text-sm hover:bg-gray-100">2️⃣ 社群分享模式</button>
                     </div>
 
                     <textarea id="output-textarea" rows="6" class="w-full p-3 border rounded-lg resize-none text-sm font-mono" readonly></textarea>
-
-                    <button id="copy-btn" data-i18n="copy_button" class="w-full mt-3 py-2 px-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition">📋 複製到剪貼簿</button>
-                    <button id="share-btn" data-i18n="share_button" class="w-full mt-2 py-2 px-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition hidden">🔗 分享 (Web Share API)</button>
+                    
+                    <button id="copy-btn" data-i18n="copy_button" class="w-full mt-3 py-2 px-4 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg hover:bg-[#7c6f64] transition">📋 複製到剪貼簿</button>
+                    <button id="share-btn" data-i18n="share_button" class="w-full mt-2 py-2 px-4 bg-[#458588] text-white font-bold rounded-lg hover:bg-[#83a598] transition hidden">🔗 分享 (Web Share API)</button>
                 </div>
                 
-                <div class="bg-white p-5 rounded-xl shadow-lg">
-                    <h2 class="text-xl font-semibold mb-3 text-gray-700" data-i18n="settings_title">筆記設定與自訂風味</h2>
-                    <label class="block mb-2 text-sm font-medium text-gray-700" data-i18n="origin_label">品名 / 產區 (Origin)</label>
-                    <input type="text" id="input-origin" data-i18n-placeholder="origin_placeholder" placeholder="e.g. Ethiopia Yirgacheffe" class="w-full p-2 border rounded-lg mb-4">
-                    <h3 class="text-lg font-medium mb-3 text-gray-700 border-t pt-4" data-i18n="add_custom_flavor_heading">手動新增自訂風味</h3>
+                <div class="bg-white p-5 rounded-xl shadow-lg dark:bg-[#3c3836]">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="settings_title">筆記設定與自訂風味</h2>
+                    <label for="input-origin" class="block mb-2 text-sm font-medium text-gray-700 dark:text-[#d5c4a1]" data-i18n="origin_label">品名 / 產區 (Origin)</label>
+                    <input type="text" id="input-origin" data-i18n-placeholder="origin_placeholder" placeholder="e.g. Ethiopia Yirgacheffe" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2] dark:placeholder-gray-500">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700 border-t pt-4 dark:text-[#ebdbb2] dark:border-gray-600" data-i18n="add_custom_flavor_heading">手動新增自訂風味</h3>
                     
-                    <label class="block mb-2 text-sm font-medium text-gray-700" data-i18n="custom_flavor_name_label">風味名稱 (將用於筆記)</label>
-                    <input type="text" id="custom-flavor-input" data-i18n-placeholder="custom_flavor_name_placeholder" placeholder="e.g. 七里香、九層塔" class="w-full p-2 border rounded-lg mb-4">
+                    <label for="custom-flavor-input" class="block mb-2 text-sm font-medium text-gray-700 dark:text-[#d5c4a1]" data-i18n="custom_flavor_name_label">風味名稱 (將用於筆記)</label>
+                    <input type="text" id="custom-flavor-input" data-i18n-placeholder="custom_flavor_name_placeholder" placeholder="e.g. 七里香、九層塔" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2] dark:placeholder-gray-500">
                     
-                    <label class="block mb-2 text-sm font-medium text-gray-700" data-i18n="select_category_label">選擇類別 (決定順序)</label>
-                    <select id="custom-flavor-category" class="w-full p-2 border rounded-lg mb-4">
+                    <label for="custom-flavor-category" class="block mb-2 text-sm font-medium text-gray-700 dark:text-[#d5c4a1]" data-i18n="select_category_label">選擇類別 (決定順序)</label>
+                    <select id="custom-flavor-category" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]">
                         <option value="" data-i18n="select_category_default">-- 請選擇 Layer 1 大類別 --</option>
                         </select>
                     
-                    <button id="add-custom-flavor-btn" data-i18n="add_custom_flavor_button" class="w-full py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition disabled:bg-gray-400" disabled>
+                    <button id="add-custom-flavor-btn" data-i18n="add_custom_flavor_button" class="w-full py-2 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg hover:bg-[#7c6f64] transition disabled:bg-gray-400" disabled>
                         ➕ 新增自訂風味
                     </button>
                 </div>
             </div>
         </main>
         
-        <footer class="text-center mt-8 text-xs text-gray-500 max-w-4xl mx-auto">
+        <footer class="text-center mt-8 text-xs text-gray-500 max-w-4xl mx-auto dark:text-[#a89984]">
             <p id="attribution-text" class="leading-relaxed"></p>
         </footer>
         <script src="js/localization.js"></script>

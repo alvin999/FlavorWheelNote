@@ -14,7 +14,8 @@ const state = {
     currentTheme: 'default',
     currentOutputMode: 'list', // 'list' or 'note'
     selectedFlavors: [],       // [ {id: 'jasmine', label: {zh: '茉莉花', ...}}, ... ]
-    inputOrigin: ''
+    inputOrigin: '',
+    isDarkMode: false // 1. 新增暗黑模式狀態
 };
 
 let flavorWheelInstance = null;
@@ -80,46 +81,59 @@ async function loadData() {
  * 初始化應用程式和 D3 風味輪實例
  */
 function initializeApp() {
-    // 檢查 FlavorWheel 類別是否存在
-    if (typeof FlavorWheel === 'undefined') {
-        const loc = window.LOCALIZATION[state.currentLang];
-        console.error(loc.flavor_wheel_module_error);
-        return;
-    }
-    
-    // 1. 動態獲取容器寬度以實現響應式設計
-    const container = document.getElementById('flavor-wheel');
-    // 獲取 #flavor-wheel 容器的實際寬度。
-    // 由於父元素 flavor-wheel-container 已移除 padding，
-    // 這裡直接使用 #flavor-wheel 的 offsetWidth 即可，讓風味輪盡可能佔滿空間。
-    // 使用 Math.max 確保寬度不會是負數或過小，避免 SVG viewBox 錯誤。
-    const containerWidth = Math.max(100, container.offsetWidth); 
+    // 使用 setTimeout 給瀏覽器一點時間來完成渲染和尺寸計算
+    // 這是處理行動裝置上 `offsetWidth` 可能為 0 的一個穩健作法
+    setTimeout(() => {
+        console.log("偵錯：setTimeout 內的初始化程式碼開始執行。");
 
-    // 2. 獲取中心文字區域的寬度，以決定風味輪的中心空白大小
-    const centerDisplay = document.getElementById('center-display');
-    const centerDiameter = centerDisplay.offsetWidth + 32; // 加上一些 padding
+        // 初始化時，根據 <html> class 同步 state
+        state.isDarkMode = document.documentElement.classList.contains('dark');
 
-    // 3. 初始化 FlavorWheel 實例
-    const initialData = allData[state.currentDrink];
-    flavorWheelInstance = new FlavorWheel(
-        '#flavor-wheel', 
-        initialData, 
-        state.currentTheme,
-        containerWidth, // 使用動態寬度
-        centerDiameter / 2 // 傳入計算好的中心半徑
-    );
-    // 讓其他模組可以存取
-    window.flavorWheelInstance = flavorWheelInstance; 
+        // 檢查 FlavorWheel 類別是否存在
+        if (typeof FlavorWheel === 'undefined') {
+            const loc = window.LOCALIZATION[state.currentLang];
+            console.error(loc.flavor_wheel_module_error);
+            return;
+        }
+        
+        // 1. 動態獲取容器寬度以實現響應式設計
+        const container = document.getElementById('flavor-wheel');
+        const containerWidth = Math.max(100, container.offsetWidth); 
 
-    // 2. 註冊所有事件監聽器
-    updateUILanguage(); // 首次載入時更新 UI 文本
-    setupEventListeners();
+        // 2. 獲取中心文字區域的寬度，以決定風味輪的中心空白大小
+        const centerDisplay = document.getElementById('center-display');
+        const centerDiameter = centerDisplay.offsetWidth + 32; // 加上一些 padding
 
-    // 3. 初始 UI 渲染
-    updateUIControls();
-    populateCategorySelect();
-    generateOutput();
-    updateAttributionText();
+        console.log(`偵錯：計算出的容器寬度 containerWidth = ${containerWidth}`);
+        console.log(`偵錯：計算出的中心直徑 centerDiameter = ${centerDiameter}`);
+
+        // 3. 初始化 FlavorWheel 實例
+        console.log("偵錯：準備建立 FlavorWheel 實例...");
+        const initialData = allData[state.currentDrink];
+        flavorWheelInstance = new FlavorWheel(
+            '#flavor-wheel', 
+            initialData, 
+            state.currentTheme,
+            containerWidth,
+            centerDiameter / 2
+        );
+        window.flavorWheelInstance = flavorWheelInstance; 
+        console.log("偵錯：FlavorWheel 實例建立成功！");
+
+        // 4. 註冊所有事件監聽器
+        console.log("偵錯：準備設定事件監聽器 (setupEventListeners)...");
+        setupEventListeners();
+        console.log("偵錯：事件監聽器設定完成！");
+
+        // 5. 執行初始 UI 渲染
+        updateUILanguage();
+        updateUIControls();
+        populateCategorySelect();
+        generateOutput();
+        updateAttributionText();
+        console.log("偵錯：首次 UI 渲染完成。");
+
+    }, 0); // 使用 0 毫秒延遲，讓它在下一個事件循環中執行
 }
 
 // --- 事件處理與 UI 邏輯 ---
@@ -154,8 +168,12 @@ function setupEventListeners() {
     document.getElementById('add-custom-flavor-btn').addEventListener('click', handleAddCustomFlavor);
     // 監聽 D3 模組發出的風味選取事件
     document.addEventListener('flavorSelected', handleFlavorSelection);
+    // 重設風味列表按鈕
+    document.getElementById('reset-flavors-btn').addEventListener('click', handleResetFlavors);
     // 監聽選取風味標籤的點擊事件 (用於刪除)
     document.getElementById('selected-flavors').addEventListener('click', handleRemoveFlavorTag);
+    // 暗黑模式切換
+    document.getElementById('dark-mode-toggle').addEventListener('click', handleDarkModeToggle);
 }
 
 // --- 事件處理函式 ---
@@ -193,9 +211,10 @@ function handleDrinkSwitch(event) {
             updateAttributionText();
             flavorWheelInstance.updateTheme(state.currentTheme); // 切換 drink type 時也更新主題
             flavorWheelInstance.updateData(allData[newDrink]);
-            // 清空選取狀態 (FlavorWheel.updateData 內部也會做)
-            state.selectedFlavors = []; 
-            generateOutput();
+            
+            // 切換風味輪後，不再自動清空列表，而是重新整理顯示和輸出
+            updateSelectedFlavorsDisplay();
+            generateOutput(); 
         }
     }
 }
@@ -278,6 +297,25 @@ function handleShare() {
 }
 
 /**
+ * 處理暗黑模式切換
+ */
+function handleDarkModeToggle() {
+    // 2. 更新 state
+    state.isDarkMode = !state.isDarkMode; 
+
+    const html = document.documentElement;
+    if (state.isDarkMode) {
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+    } else {
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+    }
+    // 3. 呼叫中央 UI 更新函式
+    updateUIControls();
+}
+
+/**
  * 檢查輸入和選擇是否有效，以啟用/禁用新增按鈕
  */
 function toggleAddCustomButton() {
@@ -336,6 +374,23 @@ function handleAddCustomFlavor() {
     generateOutput();
     
     alert(`"${flavorName}" ${window.LOCALIZATION[state.currentLang].flavor_added_alert}`);
+}
+
+/**
+ * 處理手動重設風味列表的按鈕點擊
+ */
+function handleResetFlavors() {
+    // 1. 清空應用程式狀態中的選取列表
+    state.selectedFlavors = [];
+
+    // 2. 通知 D3 風味輪實例清空其內部選取狀態並更新視覺
+    if (flavorWheelInstance) {
+        flavorWheelInstance.clearSelection();
+    }
+
+    // 3. 更新 UI 顯示和輸出
+    updateSelectedFlavorsDisplay();
+    generateOutput();
 }
 
 /**
@@ -425,28 +480,45 @@ function updateUIControls() {
     document.getElementById('luxury-theme-switch').classList.toggle('hidden', !isLuxury);
 
     // 決定當前要操作的主題容器 ID 和高亮顏色
-    const currentThemeContainerId = isLuxury ? 'luxury-theme-switch' : 'theme-switch';
-    const activeThemeClass = isLuxury ? 'bg-yellow-200 text-gray-800' : 'bg-pink-200 text-gray-800';
+    const currentThemeContainerId = isLuxury ? 'luxury-theme-switch' : 'theme-switch'; 
 
     // Helper function to update button classes
-    const updateButtons = (containerId, dataAttr, currentState, activeClass, inactiveClass) => {
+    const updateButtons = (containerId, dataAttr, currentState, activeClass, inactiveClass, hoverClass) => {
         document.querySelectorAll(`#${containerId} button`).forEach(btn => {
             if (btn.dataset[dataAttr] === currentState) {
                 btn.className = `p-2 rounded-md ${activeClass} font-semibold transition`;
             } else {
-                btn.className = `p-2 rounded-md ${inactiveClass} transition`;
+                // 修正：同時包含 inactiveClass 和 hoverClass，確保 dark: 樣式不會被覆蓋
+                btn.className = `p-2 rounded-md ${inactiveClass} ${hoverClass} transition`;
             }
         });
     };
 
+    // 根據暗黑模式狀態決定非選取按鈕的樣式
+    const inactiveClass = 'text-gray-500 dark:text-gray-400';
+    const hoverClass = state.isDarkMode 
+        ? 'dark:hover:bg-gray-700' // 修正：為暗黑模式的 hover 加上 dark: 前綴
+        : 'hover:bg-gray-100';
+
     // 飲料切換
-    updateButtons('drink-switch', 'type', state.currentDrink, 'bg-amber-200 text-gray-800', 'text-gray-500 hover:bg-gray-100');
+    updateButtons('drink-switch', 'type', state.currentDrink, 'bg-[#fe8019] text-white', inactiveClass, hoverClass);
     // 語言切換
-    updateButtons('lang-switch', 'lang', state.currentLang, 'bg-teal-200 text-gray-800', 'text-gray-500 hover:bg-gray-100');
+    updateButtons('lang-switch', 'lang', state.currentLang, 'bg-[#458588] text-white', inactiveClass, hoverClass);
     // 主題切換 (根據當前模式更新對應的切換器)
-    updateButtons(currentThemeContainerId, 'theme', state.currentTheme, activeThemeClass, 'text-gray-500 hover:bg-gray-100');
+    updateButtons('theme-switch', 'theme', state.currentTheme, 'bg-[#d3869b] text-white', inactiveClass, hoverClass);
+    updateButtons('luxury-theme-switch', 'theme', state.currentTheme, 'bg-[#fabd2f] text-[#3c3836]', inactiveClass, hoverClass);
     // 輸出模式切換
-    updateButtons('output-mode-switch', 'mode', state.currentOutputMode, 'bg-lime-200 text-gray-800', 'text-gray-500 hover:bg-white');
+    const outputModeInactiveClass = 'text-gray-500 dark:text-gray-400'; // 輸出模式有自己的背景，分開處理
+    const outputModeHoverClass = state.isDarkMode
+        ? 'dark:hover:bg-[#504945]' // 修正：為暗黑模式的 hover 加上 dark: 前綴
+        : 'hover:bg-gray-100';
+    updateButtons('output-mode-switch', 'mode', state.currentOutputMode, 'bg-[#8ec07c] text-[#3c3836]', outputModeInactiveClass, outputModeHoverClass);
+
+    // 4. 集中管理暗黑模式圖示更新
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    sunIcon.classList.toggle('hidden', state.isDarkMode);
+    moonIcon.classList.toggle('hidden', !state.isDarkMode);
 }
 
 /**
@@ -454,53 +526,68 @@ function updateUIControls() {
  */
 function updateSelectedFlavorsDisplay() {
     const container = document.getElementById('selected-flavors');
+    const resetButton = document.getElementById('reset-flavors-btn');
     container.innerHTML = '';
     const loc = window.LOCALIZATION[state.currentLang];
 
     if (state.selectedFlavors.length === 0) {
-        container.innerHTML = `<p class="text-sm text-gray-400">${loc.no_flavors_selected}</p>`;
+        container.innerHTML = `<p class="text-sm text-gray-400 dark:text-[#a89984]">${loc.no_flavors_selected}</p>`;
+        resetButton.classList.add('hidden');
         return;
     }
     
-    state.selectedFlavors.forEach(flavor => {
-        // 取得 Layer 1 的顏色 (我們需要知道它的父類別 ID)
-        let parentId = '';
-        if (flavorWheelInstance) {
-            let L1_ID = flavor.L1_id; // <-- 優先使用自訂風味的 L1_id
-            
-            // 如果是 D3 點擊的風味 (沒有 L1_id 屬性)
-            if (!L1_ID && flavorWheelInstance) {
-                // 透過 ID 在 D3 數據中向上尋找 Layer 1 類別 ID
-                L1_ID = flavorWheelInstance.data.children.find(c => 
-                    c.children.some(l2 => l2.id === flavor.id || l2.children.some(l3 => l3.id === flavor.id))
-                )?.id;
-            } 
-            // 根據當前主題，決定從哪個顏色配置物件中查找
-            const isLuxuryTheme = Object.keys(LUXURY_COLOR_THEMES).includes(state.currentTheme);
-            const themeSource = isLuxuryTheme ? LUXURY_COLOR_THEMES : COLOR_THEMES;
+    resetButton.classList.remove('hidden'); // 顯示重設按鈕
 
-            const themePalette = themeSource[state.currentTheme].palette;
-            const baseColor = themePalette[L1_ID] || '#ccc';
-            
-            // 由於 Tailwind CSS 難以動態使用變數，這裡使用 style 屬性
-            const flavorLabel = flavor.label[state.currentLang] || flavor.label.en;
-            
-            const tag = document.createElement('span');
+    state.selectedFlavors.forEach(flavor => {
+        const flavorLabel = flavor.label[state.currentLang] || flavor.label.en;
+        const tag = document.createElement('span');
+        tag.dataset.id = flavor.id;
+        tag.textContent = `${flavorLabel} ⓧ`;
+
+        // --- 孤兒風味標示法 ---
+        // 檢查此風味是否存在於當前的風味輪資料中
+        const isFlavorInCurrentWheel = flavor.isCustom || flavorWheelInstance.findNodeById(flavor.id);
+
+        if (isFlavorInCurrentWheel) {
+            // 風味存在於當前輪，或為自訂風味，正常上色
+            let L1_ID = flavor.L1_id; // 自訂風味的 L1 ID
+            if (!L1_ID) {
+                // 從風味輪實例中向上查找 L1 ID
+                const node = flavorWheelInstance.findNodeById(flavor.id);
+                if (node && node.parent && node.parent.depth > 0) {
+                    // 找到其 Layer 1 的祖先
+                    let ancestor = node;
+                    while (ancestor.depth > 1) {
+                        ancestor = ancestor.parent;
+                    }
+                    L1_ID = ancestor.data.id;
+                }
+            }
+
+            if (L1_ID) {
+                const isLuxuryTheme = Object.keys(LUXURY_COLOR_THEMES).includes(state.currentTheme);
+                const themeSource = isLuxuryTheme ? LUXURY_COLOR_THEMES : COLOR_THEMES;
+                const themePalette = themeSource[state.currentTheme]?.palette || themeSource['default'].palette;
+                const baseColor = themePalette[L1_ID] || '#E5E7EB'; // 找不到顏色也給個灰色
+                tag.style.backgroundColor = baseColor;
+            } else {
+                tag.style.backgroundColor = '#E5E7EB'; // 找不到 L1_ID，設為灰色
+            }
             // 加上 cursor-pointer 和 hover 效果，並在文字後方加上刪除圖示
-            tag.className = 'inline-block px-3 py-1 text-sm font-medium rounded-full mr-2 mb-2 text-gray-800 cursor-pointer hover:opacity-80 transition-opacity';
-            tag.style.backgroundColor = baseColor;
-            tag.dataset.id = flavor.id; // 加上 data-id 以便識別
-            tag.textContent = `${flavorLabel} ⓧ`; // 加上刪除圖示
-            
-            container.appendChild(tag);
+            tag.className = 'inline-block px-3 py-1 text-sm font-medium rounded-full mr-2 mb-2 text-gray-800 dark:text-[#282828] cursor-pointer hover:opacity-80 transition-opacity';
+        } else {
+            // 風味不存在於當前輪 (孤兒風味)
+            tag.className = 'inline-block px-3 py-1 text-sm font-medium rounded-full mr-2 mb-2 text-gray-400 bg-gray-200 border border-dashed border-gray-400 cursor-pointer hover:opacity-80 transition-opacity dark:bg-[#504945] dark:text-[#bdae93] dark:border-[#7c6f64]';
         }
+
+        container.appendChild(tag);
     });
 }
 
 function populateCategorySelect() {
     const select = document.getElementById('custom-flavor-category');
     const loc = window.LOCALIZATION[state.currentLang];
-    select.innerHTML = `<option value="">${loc.select_category_default}</option>`; // 清空並重設預設
+    select.innerHTML = `<option value="" class="text-gray-500">${loc.select_category_default}</option>`; // 清空並重設預設
     
     const currentData = allData[state.currentDrink];
     if (!currentData || !currentData.children) return;
@@ -574,7 +661,23 @@ function generateOutput() {
 }
 
 
+
+
+
 // --- 啟動程式 ---
 
 // DOM 內容完全載入後，開始載入資料並初始化
 document.addEventListener('DOMContentLoaded', loadData);
+
+// 在 FlavorWheel 類別中新增一個輔助方法
+FlavorWheel.prototype.findNodeById = function(id) {
+    let foundNode = null;
+    // d3.hierarchy 建立的 root 物件有 .each 方法可以遍歷所有節點
+    const root = this.prepareData(this.data);
+    root.each(node => {
+        if (node.data.id === id) {
+            foundNode = node;
+        }
+    });
+    return foundNode;
+};

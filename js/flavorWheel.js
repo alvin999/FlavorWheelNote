@@ -3,17 +3,21 @@
  * * 核心 D3.js 模組：負責繪製 Sunburst Chart、處理互動及選取邏輯。
  */
 class FlavorWheel {
-    constructor(selector, initialData, theme, width = 700, centerRadius = 100) {
+    constructor(selector, initialData, theme, width = 700, centerDiameter = 200) {
         // 確保 D3.js 存在
         if (typeof d3 === 'undefined') {
             console.error("D3.js library is not loaded.");
             return;
         }
 
+        // 根據風味輪寬度動態計算中心半徑，使其在不同裝置上比例更協調
+        // 在大螢幕上中心區域較大，在小螢幕上則相對縮小，讓環狀區域有更多空間
+        const dynamicCenterRadius = Math.max(60, Math.min(width * 0.15, 100));
+
         this.selector = selector;
         this.width = width;
         this.radius = this.width / 2;
-        this.centerRadius = centerRadius; // 新增：接收外部傳入的中心半徑
+        this.centerRadius = dynamicCenterRadius; // 使用動態計算的中心半徑
         this.data = initialData;
         this.currentLang = 'zh'; // 預設語言
         this.currentTheme = theme || 'default';
@@ -115,6 +119,12 @@ class FlavorWheel {
             .attr("fill", d => this.getArcColor(d))
             .attr("d", this.arc)
             .style("fill-opacity", d => d.depth === 0 ? 0 : 1) // 隱藏最中心根節點
+            // 設定透明度：中心隱藏，最外層淡出，其餘正常
+            .style("fill-opacity", d => {
+                if (d.depth === 0) return 0; // 隱藏中心根節點
+                if (d.data.layer === 3) return 0.8; // 最外層淡出效果
+                return 1; // 其他層級正常顯示
+            })
             .on("mouseover", (event, d) => this.handleHover(d, true))
             .on("mouseout", (event, d) => this.handleHover(d, false))
             .on("click", (event, d) => this.handleClick(d));
@@ -129,36 +139,41 @@ class FlavorWheel {
     /**
      * 繪製弧形上的文字標籤
      */
+    
     drawLabels() {
-        this.svg.selectAll("text.flavor-label").remove(); // 清除舊標籤，只清除帶有 flavor-label class 的
+        this.svg.selectAll("g.label-group").remove(); // 清除舊的標籤群組
 
+        // 根據裝置寬度決定一個統一的字體大小，邏輯更簡單
+        // 桌面版使用 20px，行動裝置版使用 12px
+        const fontSize = this.width >= 768 ? 20 : 4;
+
+        const self = this;
         this.svg.selectAll("path.flavor-arc")
-            .each((d, i, nodes) => {
-                if (d.depth === 0) return; // 不為根節點添加標籤
-
-                const label = d.data.label[this.currentLang] || d.data.label.en;
-                if (!label) return; // 如果沒有標籤，則不繪製
-
-                const [centroidX, centroidY] = this.arc.centroid(d);
-                const angle = (d.x0 + d.x1) / 2 * 180 / Math.PI - 90;
+            .filter(d => d.depth > 0) // 只處理可見的弧形
+            .each(function(d) {
+                const labelText = d.data.label[self.currentLang] || d.data.label.en;
+                if (!labelText) return;
                 
-                // 為了讓左半邊的文字更容易閱讀，我們將其翻轉
-                let finalAngle = angle;
-                if (angle > 90 && angle < 270) {
-                    finalAngle = angle + 180;
-                }
+                // 繪製最終的標籤
+                const [centroidX, centroidY] = self.arc.centroid(d);
+                const angle = (d.x0 + d.x1) / 2 * 180 / Math.PI - 90;
+                // 將位於左半邊的文字翻轉 180 度，避免倒置
+                const finalAngle = (angle > 90 && angle < 270) ? angle + 180 : angle;
 
-                // 強制顯示所有標籤，即使可能重疊
-                    this.svg.append("text")
-                        .attr("class", "flavor-label") // 添加 class 以應用通用樣式
-                        // 使用計算後的 finalAngle 進行旋轉
-                        .attr("transform", `translate(${centroidX}, ${centroidY}) rotate(${finalAngle})`)
-                        .attr("dy", "0.35em")
-                        .attr("text-anchor", "middle")
-                        .text(label); // 顯示標籤文字
+                const labelGroup = self.svg.append("g")
+                    .attr("class", "label-group") // 為群組加上 class
+                    .attr("transform", `translate(${centroidX}, ${centroidY}) rotate(${finalAngle})`);
+
+                // 使用統一計算好的字體大小
+                labelGroup.append("text")
+                    .attr("class", "flavor-label")
+                    .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", `${fontSize}px`)
+                    .text(labelText);
             });
     }
-
+    
     /**
      * 取得弧形顏色
      * @param {Object} d - D3 階層節點資料
@@ -298,27 +313,38 @@ class FlavorWheel {
         const categoryElement = document.getElementById('current-category');
         const flavorElement = document.getElementById('current-flavor');
 
+        // 修正：區分初始狀態和互動狀態的字體大小
+        // 初始狀態 (type === 'center') 使用固定的 16px，避免 "Flavor Wheel" 等長文字在小螢幕或日文版溢出
+        if (type === 'center') {
+            flavorElement.style.fontSize = '16px';
+        } else {
+            // 互動時才使用動態計算，讓風味名稱可以放大顯示
+            const centerFontSize = Math.max(16, Math.min(this.width / 20, 28));
+            flavorElement.style.fontSize = `${centerFontSize}px`;
+        }
         if (!d || !d.data.label) {
             categoryElement.textContent = '';
             // flavorElement.textContent = '風味輪載入中...'; // 移除此行，因為語言切換是同步的，不需要載入提示
             return;
         }
 
+        const loc = window.LOCALIZATION[this.currentLang];
         const label = d.data.label[this.currentLang] || d.data.label.en || d.data.id;
         let parentLabel = '';
         
         if (d.data.layer > 1 && d.parent) {
             parentLabel = d.parent.data.label[this.currentLang] || d.parent.data.label.en;
         } else if (d.data.layer === 1) {
-            parentLabel = '大類別';
+            // 使用本地化的「大類別」標籤
+            parentLabel = loc.layer1_category_label;
         }
 
         if (type === 'hover-category') {
             categoryElement.textContent = `[${label}]`;
-            flavorElement.textContent = '請點選更細項的風味';
+            flavorElement.textContent = loc.select_finer_flavor; // 使用本地化文字
         } else if (type === 'selected') {
             categoryElement.textContent = parentLabel ? `[${parentLabel}]` : '';
-            flavorElement.textContent = `${label} (已加入)`;
+            flavorElement.textContent = `${label} (${loc.flavor_added})`; // 使用本地化文字
         } else {
             categoryElement.textContent = parentLabel ? `[${parentLabel}]` : '';
             flavorElement.textContent = label;
@@ -326,11 +352,11 @@ class FlavorWheel {
 
         // 視覺回饋：如果被選取，給予不同顏色
         if (type === 'selected' || type === 'hover-category') {
-             flavorElement.className = 'text-xl font-bold text-green-600 transition';
+             flavorElement.className = 'font-bold text-green-600 dark:text-green-400 transition';
         } else if (type === 'hover') {
-             flavorElement.className = 'text-xl font-bold text-amber-600 transition';
+             flavorElement.className = 'font-bold text-amber-600 dark:text-amber-400 transition';
         } else {
-            flavorElement.className = 'text-xl font-bold text-gray-800 transition';
+            flavorElement.className = 'font-bold text-gray-800 dark:text-[#ebdbb2] transition';
         }
     }
 
@@ -341,15 +367,19 @@ class FlavorWheel {
     updateData(newData) {
         this.data = newData;
         // 清空選取列表，因為資料集已切換
-        this.selectedFlavors.clear(); 
+        // 改成手動清空，讓風味輪切換不影響已選取
+        // this.selectedFlavors.clear(); 
         
         // 重新初始化 SVG 並繪圖
         this.initSVG();
         this.draw(this.data);
         
-        // 通知外部應用程式清空輸出
+        // 通知外部應用程式，讓它用目前保留的風味列表來更新 UI
         document.dispatchEvent(new CustomEvent('flavorSelected', {
-            detail: { selected: [], lang: this.currentLang }
+            detail: { 
+                selected: Array.from(this.selectedFlavors.values()), // <--- 傳遞當前已選的風味
+                lang: this.currentLang 
+            }
         }));
     }
 
@@ -367,6 +397,18 @@ class FlavorWheel {
                 .classed('selected', false);
         }
     }
+
+    /**
+     * 從外部清空所有選取狀態
+     */
+    clearSelection() {
+        this.selectedFlavors.clear();
+        // 移除所有弧形的 'selected' class
+        this.svg.selectAll('path.flavor-arc').classed('selected', false);
+        // 將中央顯示恢復到預設狀態
+        this.updateCenterDisplay({data: {label: {zh: '風味輪', en: 'Flavor Wheel', jp: '風味の輪'}, layer: 0}}, 'center');
+    }
+
 
     /**
      * 更新顯示語言

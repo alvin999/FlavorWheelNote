@@ -36,6 +36,9 @@ window.LOCALIZATION = {
         "copy_fail": "複製失敗!",
         "share_fail": "分享失敗",
         "flavor_added_alert": "已加入筆記!",
+        "flavor_added": "已加入",
+        "select_finer_flavor": "請點選更細項的風味",
+        "layer1_category_label": "大類別",
         "coffee_drink_type": "咖啡",
         "tea_drink_type": "茶",
         "flavor_wheel_module_error": "FlavorWheel 模組未載入。請檢查 js/flavorWheel.js。",
@@ -46,7 +49,8 @@ window.LOCALIZATION = {
         "ai_friendly_header": "[風味輪筆記輸出]\n",
         "ai_friendly_drink": "飲料",
         "ai_friendly_origin": "產區",
-        "ai_friendly_flavors": "風味"
+        "ai_friendly_flavors": "風味",
+        "reset_flavors_button": "重設列表"
     },
     "en": {
         "app_title": "Flavor Wheel Note",
@@ -83,6 +87,9 @@ window.LOCALIZATION = {
         "copy_fail": "Failed to copy!",
         "share_fail": "Share failed",
         "flavor_added_alert": " has been added to your note!",
+        "flavor_added": "Added",
+        "select_finer_flavor": "Please select a more specific flavor",
+        "layer1_category_label": "Category",
         "coffee_drink_type": "Coffee",
         "tea_drink_type": "Tea",
         "flavor_wheel_module_error": "FlavorWheel module not loaded. Please check js/flavorWheel.js.",
@@ -93,7 +100,8 @@ window.LOCALIZATION = {
         "ai_friendly_header": "[Flavor Wheel Note Output]\n",
         "ai_friendly_drink": "Drink",
         "ai_friendly_origin": "Origin",
-        "ai_friendly_flavors": "Flavors"
+        "ai_friendly_flavors": "Flavors",
+        "reset_flavors_button": "Reset List"
     },
     "jp": {
         "app_title": "フレーバーホイールノート",
@@ -130,6 +138,9 @@ window.LOCALIZATION = {
         "copy_fail": "コピーに失敗しました!",
         "share_fail": "共有に失敗しました",
         "flavor_added_alert": "がノートに追加されました!",
+        "flavor_added": "追加済み",
+        "select_finer_flavor": "より詳細な風味を選択してください",
+        "layer1_category_label": "大分類",
         "coffee_drink_type": "コーヒー",
         "tea_drink_type": "紅茶",
         "flavor_wheel_module_error": "FlavorWheel モジュールがロードされていません。js/flavorWheel.js を確認してください。",
@@ -140,6 +151,7 @@ window.LOCALIZATION = {
         "ai_friendly_header": "[フレーバーホイールノート出力]\n",
         "ai_friendly_drink": "飲み物",
         "ai_friendly_origin": "産地",
-        "ai_friendly_flavors": "風味"
+        "ai_friendly_flavors": "風味",
+        "reset_flavors_button": "リストをリセット"
     }
 };
