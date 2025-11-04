@@ -55,30 +55,35 @@
         <header class="mb-6 flex flex-col md:flex-row justify-between items-center">
             <h1 class="text-3xl font-bold text-gray-700 dark:text-[#ebdbb2]" data-i18n="app_title">Flavor Wheel Note</h1>
             <div class="flex flex-wrap justify-center md:justify-end gap-2 mt-4 md:mt-0">
-                <div id="drink-switch" class="flex p-1 bg-white rounded-lg shadow">
+                <div id="drink-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
                     <button data-type="coffee" data-i18n="coffee_button" class="p-2 rounded-md bg-[#fe8019] text-white font-semibold transition">☕ 咖啡</button>
                     <button data-type="tea" data-i18n="tea_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🍵 茶</button>
                     <button data-type="luxury" data-i18n="luxury_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💎 奢華</button>
                 </div>
-                <div id="lang-switch" class="flex p-1 bg-white rounded-lg shadow shrink-0">
+                <div id="lang-switch" class="flex p-1 bg-white rounded-lg shadow shrink-0 dark:bg-[#504945]">
                     <button data-lang="zh" data-i18n="lang_zh_button" class="p-2 rounded-md bg-[#458588] text-white font-semibold transition">中</button>
                     <button data-lang="en" data-i18n="lang_en_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">EN</button>
                     <button data-lang="jp" data-i18n="lang_jp_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">日</button>
                 </div>
-                <div id="theme-switch" class="flex p-1 bg-white rounded-lg shadow">
+                <div id="theme-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
                     <button data-theme="default" data-i18n="theme_default_button" class="p-2 rounded-md bg-[#d3869b] text-white font-semibold transition">🎨 Default</button>
                     <button data-theme="catppuccin" data-i18n="theme_catppuccin_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Catppuccin</button>
                     <button data-theme="gruvbox" data-i18n="theme_gruvbox_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Gruvbox</button>
                 </div>
-                <div id="luxury-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden">
+                <div id="luxury-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden dark:bg-[#504945]">
                     <button data-theme="luxury_gold" data-i18n="theme_luxury_gold_button" class="p-2 rounded-md bg-[#fabd2f] text-[#3c3836] font-semibold transition">⚜️ 奢華金</button>
                     <button data-theme="rose_gold" data-i18n="theme_rose_gold_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🌹 玫瑰金</button>
                     <button data-theme="platinum" data-i18n="theme_platinum_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💍 鉑金</button>
                 </div>
-                <div id="dark-mode-switch" class="flex p-1 bg-white rounded-lg shadow">
+                <div id="tea-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden dark:bg-[#504945]">
+                    <button data-theme="spring_garden" data-i18n="theme_tea_spring_button" class="p-2 rounded-md bg-[#a6d189] text-[#3c3836] font-semibold transition">🌱 春日茶園</button>
+                    <button data-theme="autumn_roast" data-i18n="theme_tea_autumn_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🍂 秋日焙茶</button>
+                    <button data-theme="midnight_contemplation" data-i18n="theme_tea_midnight_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🌙 靜夜沉思</button>
+                </div>
+                <div id="dark-mode-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
                     <button id="dark-mode-toggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition">
-                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM5.05 14.464l-.707.707a1 1 0 001.414 1.414l.707-.707a1 1 0 00-1.414-1.414zM1.464 6.536a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        <svg id = "sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
                         </svg>
                         <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
@@ -89,7 +94,7 @@
         </header>
                 
         <main class="grid grid-cols-1 gap-8 items-start">
-            <div class="relative bg-white rounded-xl shadow-lg flavor-wheel-container dark:bg-[#3c3836] overflow-hidden">
+            <div class="relative bg-white rounded-xl shadow-lg flavor-wheel-container dark:bg-[#3c3836] overflow-hidden transition-opacity duration-300 ease-in-out">
                 <div id="flavor-wheel">
                     </div>
                 <div id="center-display" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center px-4">
@@ -112,12 +117,13 @@
 
                     <h2 class="text-xl font-semibold mt-4 mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="generate_note_title">生成筆記</h2>
                     
-                    <div id="output-mode-switch" class="flex mb-3 p-1 bg-gray-100 rounded-lg">
-                        <button data-mode="list" data-i18n="output_mode_list" class="flex-1 p-2 rounded-md bg-[#8ec07c] text-[#3c3836] text-sm font-medium">1️⃣ 純風味文字</button>
-                        <button data-mode="note" data-i18n="output_mode_note" class="flex-1 p-2 rounded-md text-gray-500 text-sm hover:bg-gray-100">2️⃣ 社群分享模式</button>
+                    <div id="output-mode-switch" class="flex mb-3 p-1 bg-gray-100 rounded-lg dark:bg-[#282828]">
+                        <button data-mode="list" data-i18n="output_mode_list" class="flex-1 p-2 rounded-md text-gray-500 text-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#504945]">1️⃣ 純風味文字</button>
+                        <button data-mode="note" data-i18n="output_mode_note" class="flex-1 p-2 rounded-md bg-[#8ec07c] text-[#3c3836] text-sm font-medium">2️⃣ 社群分享模式</button>
+                        <button data-mode="ai_prompt" data-i18n="output_mode_ai_prompt" class="flex-1 p-2 rounded-md text-gray-500 text-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#504945]">🤖 AI 筆記助手</button>
                     </div>
 
-                    <textarea id="output-textarea" rows="6" class="w-full p-3 border rounded-lg resize-none text-sm font-mono" readonly></textarea>
+                    <textarea id="output-textarea" rows="6" class="w-full p-3 border rounded-lg resize-none text-sm font-mono bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]" readonly></textarea>
                     
                     <button id="copy-btn" data-i18n="copy_button" class="w-full mt-3 py-2 px-4 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg hover:bg-[#7c6f64] transition">📋 複製到剪貼簿</button>
                     <button id="share-btn" data-i18n="share_button" class="w-full mt-2 py-2 px-4 bg-[#458588] text-white font-bold rounded-lg hover:bg-[#83a598] transition hidden">🔗 分享 (Web Share API)</button>
@@ -150,6 +156,7 @@
         <script src="js/localization.js"></script>
         <script src="js/colorThemes.js"></script> 
         <script src="js/luxuryColorThemes.js"></script>
+        <script src="js/teaColorThemes.js"></script>
         <script src="js/flavorWheel.js"></script>
         <script src="js/app.js"></script>
     </div>

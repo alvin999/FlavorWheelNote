@@ -86,6 +86,7 @@ class FlavorWheel {
         const root = d3.hierarchy(data).sum(d => (d && d.children && d.children.length > 0) ? 0 : 1);
 
         // 使用一個更智能的排序函式
+        /*
         root.sort((a, b) => {
             // 規則 1: Layer 1 永遠按照 JSON 中的 "index" 排序
             if (a.depth === 1 && b.depth === 1) {
@@ -99,7 +100,7 @@ class FlavorWheel {
             // 規則 3: 其他所有層級，都按照預設的權重（風味數量）從大到小排序
             return b.value - a.value;
         });
-        
+        */
         return this.partition(root);
     }
 
@@ -108,70 +109,97 @@ class FlavorWheel {
      * @param {Object} data - 原始 JSON 資料
      */
     draw(data) {
+        const transitionDuration = 500; // 動畫時間 (毫秒)
         const root = this.prepareData(data);
         const arcs = root.descendants();
 
-        // 綁定資料並繪製弧形
-        const path = this.svg.selectAll("path")
-            .data(arcs)
-            .join("path")
-            .attr("class", d => `flavor-arc layer-${d.data.layer || 1} ${this.selectedFlavors.has(d.data.id) ? 'selected' : ''}`)
-            .attr("fill", d => this.getArcColor(d))
-            .attr("d", this.arc)
-            .style("fill-opacity", d => d.depth === 0 ? 0 : 1) // 隱藏最中心根節點
-            // 設定透明度：中心隱藏，最外層淡出，其餘正常
-            .style("fill-opacity", d => {
-                if (d.depth === 0) return 0; // 隱藏中心根節點
-                if (d.data.layer === 3) return 0.8; // 最外層淡出效果
-                return 1; // 其他層級正常顯示
-            })
+        // --- 1. 繪製弧形 (Arcs) ---
+        this.svg.selectAll("path.flavor-arc") // 選擇所有帶有 flavor-arc class 的 path
+            .data(arcs, d => d.data.id) // 使用 d.data.id 作為 key 進行資料綁定，實現物件恆定性
+            .join(
+                enter => enter.append("path")
+                    .attr("class", d => `flavor-arc layer-${d.data.layer || 1} ${this.selectedFlavors.has(d.data.id) ? 'selected' : ''}`)
+                    .attr("fill", d => this.getArcColor(d))
+                    .attr("d", this.arc) // 初始形狀
+                    .style("fill-opacity", 0) // 從透明開始
+                    .on("mouseover", (event, d) => this.handleHover(d, true)) // 事件監聽器只在進入時綁定一次
+                    .on("mouseout", (event, d) => this.handleHover(d, false))
+                    .on("click", (event, d) => this.handleClick(d))
+                    .call(enter => enter.transition().duration(transitionDuration)
+                        .style("fill-opacity", d => (d.depth === 0 ? 0 : 1))), // 淡入新元素
+
+                update => update
+                    // 更新 class (例如 selected 狀態)
+                    .attr("class", d => `flavor-arc layer-${d.data.layer || 1} ${this.selectedFlavors.has(d.data.id) ? 'selected' : ''}`)
+                    .call(update => update.transition().duration(transitionDuration)
+                        .attr("fill", d => this.getArcColor(d)) // 過渡顏色
+                        .attr("d", this.arc) // 過渡到新形狀/位置
+                        .style("fill-opacity", d => (d.depth === 0 ? 0 : 1))), // 確保透明度正確
+
+                exit => exit.transition().duration(transitionDuration)
+                    .style("fill-opacity", 0) // 淡出舊元素
+                    .remove() // 移除
+            );
+            // 移除這裡重複的事件監聽器，因為它們已經在 enter selection 中綁定
+            /*
             .on("mouseover", (event, d) => this.handleHover(d, true))
             .on("mouseout", (event, d) => this.handleHover(d, false))
             .on("click", (event, d) => this.handleClick(d));
+            */
 
-        // 繪製所有風味的文字標籤
-        this.drawLabels();
+        // --- 2. 繪製文字標籤 (Labels) ---
+        const self = this;
+        let fontSize;
+        if (this.currentLang === 'jp') {
+            fontSize = this.width >= 768 ? 20 : 3;
+        } else {
+            fontSize = this.width >= 768 ? 20 : 5;
+        }
+
+        this.svg.selectAll("g.label-group")
+            .data(arcs.filter(d => d.depth > 0), d => d.data.id) // 同樣使用 key 進行綁定
+            .join(
+                enter => {
+                    // 為新標籤建立群組，並設定初始位置和透明度
+                    const group = enter.append("g")
+                        .attr("class", "label-group")
+                        .style("opacity", 0)
+                        .attr("transform", d => `translate(${this.arc.centroid(d)}) rotate(${this.getLabelAngle(d)})`);
+
+                    group.append("text")
+                        .attr("class", "flavor-label")
+                        .attr("dy", "0.35em")
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", `${fontSize}px`)
+                        .text(d => d.data.label[self.currentLang] || d.data.label.en);
+
+                    // 淡入新標籤
+                    group.transition().duration(transitionDuration).style("opacity", 1);
+                    return group;
+                },
+                update => {
+                    // 為了實現文字的交叉淡入淡出效果，我們需要更精細的控制
+                    const textUpdate = update.select("text");
+
+                    // 1. 先讓舊文字淡出
+                    textUpdate.transition().duration(transitionDuration / 2)
+                        .style("opacity", 0)
+                        // 2. 在淡出動畫結束時，更新文字內容，並立即將其設為透明
+                        .end().then(() => {
+                            textUpdate.text(d => d.data.label[self.currentLang] || d.data.label.en)
+                                // 3. 接著讓新文字淡入
+                                .transition().duration(transitionDuration / 2).style("opacity", 1);
+                        });
+                    // 同時，讓整個標籤群組平滑移動到新位置
+                    update.transition().duration(transitionDuration)
+                        .attr("transform", d => `translate(${this.arc.centroid(d)}) rotate(${this.getLabelAngle(d)})`);
+                    return update;
+                },
+                exit => exit.transition().duration(transitionDuration).style("opacity", 0).remove() // 淡出並移除舊標籤
+            );
 
         // 更新中央顯示 (初始狀態)
         this.updateCenterDisplay({data: {label: {zh: '風味輪', en: 'Flavor Wheel', jp: '風味の輪'}, layer: 0}}, 'center');
-    }
-
-    /**
-     * 繪製弧形上的文字標籤
-     */
-    
-    drawLabels() {
-        this.svg.selectAll("g.label-group").remove(); // 清除舊的標籤群組
-
-        // 根據裝置寬度決定一個統一的字體大小，邏輯更簡單
-        // 桌面版使用 20px，行動裝置版使用 12px
-        const fontSize = this.width >= 768 ? 20 : 4;
-
-        const self = this;
-        this.svg.selectAll("path.flavor-arc")
-            .filter(d => d.depth > 0) // 只處理可見的弧形
-            .each(function(d) {
-                const labelText = d.data.label[self.currentLang] || d.data.label.en;
-                if (!labelText) return;
-                
-                // 繪製最終的標籤
-                const [centroidX, centroidY] = self.arc.centroid(d);
-                const angle = (d.x0 + d.x1) / 2 * 180 / Math.PI - 90;
-                // 將位於左半邊的文字翻轉 180 度，避免倒置
-                const finalAngle = (angle > 90 && angle < 270) ? angle + 180 : angle;
-
-                const labelGroup = self.svg.append("g")
-                    .attr("class", "label-group") // 為群組加上 class
-                    .attr("transform", `translate(${centroidX}, ${centroidY}) rotate(${finalAngle})`);
-
-                // 使用統一計算好的字體大小
-                labelGroup.append("text")
-                    .attr("class", "flavor-label")
-                    .attr("dy", "0.35em")
-                    .attr("text-anchor", "middle")
-                    .attr("font-size", `${fontSize}px`)
-                    .text(labelText);
-            });
     }
     
     /**
@@ -183,12 +211,23 @@ class FlavorWheel {
             return 'transparent'; // 中心節點
         }
 
-        // 判斷當前主題是屬於一般主題還是奢華主題
+        // 判斷當前主題屬於哪種類型 (茶、奢華、或一般)
+        const isTeaTheme = Object.keys(TEA_COLOR_THEMES).includes(this.currentTheme);
         const isLuxuryTheme = Object.keys(LUXURY_COLOR_THEMES).includes(this.currentTheme);
-        const themeSource = isLuxuryTheme ? LUXURY_COLOR_THEMES : COLOR_THEMES;
-        const defaultTheme = isLuxuryTheme ? DEFAULT_LUXURY_THEME : 'default';
+        
+        let themeSource, defaultThemeId;
 
-        const themePalette = themeSource[this.currentTheme]?.palette || themeSource[defaultTheme].palette;
+        if (isTeaTheme) {
+            themeSource = TEA_COLOR_THEMES;
+            defaultThemeId = DEFAULT_TEA_THEME;
+        } else if (isLuxuryTheme) {
+            themeSource = LUXURY_COLOR_THEMES;
+            defaultThemeId = DEFAULT_LUXURY_THEME;
+        } else {
+            themeSource = COLOR_THEMES;
+            defaultThemeId = 'default';
+        }
+        const themePalette = themeSource[this.currentTheme]?.palette || themeSource[defaultThemeId].palette;
 
         // 智慧型顏色查找：
         // 1. 優先使用自身 ID 查找顏色。
@@ -205,13 +244,24 @@ class FlavorWheel {
         // 如果遍歷完都沒找到顏色，給一個預設值
         return baseColor || '#cccccc';
     }
+
+    /**
+     * 計算標籤的旋轉角度
+     * @param {Object} d - D3 階層節點資料
+     */
+    getLabelAngle(d) {
+        const angle = (d.x0 + d.x1) / 2 * 180 / Math.PI - 90;
+        // 將位於左半邊的文字翻轉 180 度，避免倒置
+        return (angle > 90 && angle < 270) ? angle + 180 : angle;
+    }
+
     /**
     * 更新顏色主題並重繪
     * @param {string} newTheme - 新的主題 ID (如 'catppuccin')
     */
     updateTheme(newTheme) {
         // 檢查新主題是否存在於任一個主題配置中
-        const themeExists = COLOR_THEMES[newTheme] || LUXURY_COLOR_THEMES[newTheme];
+        const themeExists = COLOR_THEMES[newTheme] || LUXURY_COLOR_THEMES[newTheme] || TEA_COLOR_THEMES[newTheme];
 
         if (this.currentTheme !== newTheme && themeExists) {
             this.currentTheme = newTheme;
@@ -220,9 +270,6 @@ class FlavorWheel {
                 .transition() // 增加過渡效果，讓切換更平滑
                 .duration(500)
                 .attr("fill", d => this.getArcColor(d));
-
-            // 主題更新時，標籤顏色可能也需要更新，這裡直接重繪
-            this.drawLabels();
 
             const themeName = themeExists.name;
             console.log(`主題已切換至: ${themeName}`);
@@ -319,7 +366,7 @@ class FlavorWheel {
             flavorElement.style.fontSize = '16px';
         } else {
             // 互動時才使用動態計算，讓風味名稱可以放大顯示
-            const centerFontSize = Math.max(16, Math.min(this.width / 20, 28));
+            const centerFontSize = Math.max(8, Math.min(this.width / 30, 26));
             flavorElement.style.fontSize = `${centerFontSize}px`;
         }
         if (!d || !d.data.label) {
@@ -352,9 +399,9 @@ class FlavorWheel {
 
         // 視覺回饋：如果被選取，給予不同顏色
         if (type === 'selected' || type === 'hover-category') {
-             flavorElement.className = 'font-bold text-green-600 dark:text-green-400 transition';
+             flavorElement.className = 'font-bold text-[#b8bb26] dark:text-[#b8bb26] transition'; // Gruvbox Green
         } else if (type === 'hover') {
-             flavorElement.className = 'font-bold text-amber-600 dark:text-amber-400 transition';
+             flavorElement.className = 'font-bold text-[#fabd2f] dark:text-[#fabd2f] transition'; // Gruvbox Yellow
         } else {
             flavorElement.className = 'font-bold text-gray-800 dark:text-[#ebdbb2] transition';
         }
@@ -369,9 +416,8 @@ class FlavorWheel {
         // 清空選取列表，因為資料集已切換
         // 改成手動清空，讓風味輪切換不影響已選取
         // this.selectedFlavors.clear(); 
-        
-        // 重新初始化 SVG 並繪圖
-        this.initSVG();
+        // 不再重新初始化 SVG，而是讓 D3 處理現有元素的更新。
+        // initSVG() 僅在 FlavorWheel 實例化時呼叫一次。
         this.draw(this.data);
         
         // 通知外部應用程式，讓它用目前保留的風味列表來更新 UI
@@ -383,7 +429,7 @@ class FlavorWheel {
         }));
     }
 
-    /**
+    /** 
      * 根據 ID 從外部取消選取一個風味
      * @param {string} flavorId - 要取消選取的風味 ID
      */
@@ -416,12 +462,9 @@ class FlavorWheel {
      */
     updateLanguage(newLang) {
         this.currentLang = newLang;
-        
-        // 重新更新中央顯示和所有選取風味的標籤
-        // 修正：在語言切換時，中心顯示應恢復為預設的「風味輪」文字，而不是顯示「載入中」。
-        this.updateCenterDisplay(
-            {data: {label: {zh: '風味輪', en: 'Flavor Wheel', jp: '風味の輪'}, layer: 0}},
-            'center');
+
+        // 重新呼叫 draw 函式，用現有的資料和新的語言設定來更新標籤。
+        this.draw(this.data);
 
         // 重新觸發一次選取事件，讓外部的列表和輸出重新生成
         document.dispatchEvent(new CustomEvent('flavorSelected', {
@@ -430,8 +473,5 @@ class FlavorWheel {
                 lang: this.currentLang
             }
         }));
-
-        // 語言切換後，重繪標籤
-        this.drawLabels();
     }
 }

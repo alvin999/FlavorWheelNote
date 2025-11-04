@@ -3,146 +3,146 @@ const COLOR_THEMES = {
     default: {
         name: "Default",
         palette: {
-            // Layer 1 - 主要分類 (基於官方風味輪配色)
-            "fruity": "#e74c3c",
-            "floral": "#e8c0cb",
-            "sour": "#f1c40f",
-            "green_vegetative": "#2ecc71",
-            "sweet": "#f4d03f",
-            "nutty_cocoa": "#d4905a",
-            "spices": "#c4714f",
-            "roasted": "#8b6f47",
-            "papery_musty": "#95a5a6",
-            "other": "#7f8c8d",
+            // Layer 1 - 主要分類 (自然瑜伽風格 - 增強版)
+            "fruity": "#D05663", // 鮭魚粉/珊瑚紅 - 活力
+            "floral": "#B1A0B8", // 灰紫色 - 優雅、芬芳
+            "sour": "#E0C8A0", // 柔和黃 - 明亮、酸質
+            "green_vegetative": "#748B6F", // 灰綠色/鼠尾草綠 - 自然、平和
+            "sweet": "#B48A78", // 陶土色 - 溫暖、甜美
+            "nutty_cocoa": "#A89984", // 大地棕 - 溫和、樸實
+            "spices": "#D87B56", // 橘紅色 - 溫暖、辛香
+            "roasted": "#928374", // 深大地棕 - 烘焙、沉穩
+            "papery_musty": "#80A29C", // 灰調松綠色 - 沉靜、塵封
+            "other": "#A0B0C0", // 藍灰色 - 其他、化學感
 
-            // Layer 2 & 3 - 水果 (紅色系)
-            "berry": "#e74c3c",
-            "blueberry": "#3498db",
-            "raspberry": "#e91e63",
-            "blackberry": "#9c27b0",
-            "strawberry": "#e74c3c",
-            "dried_fruit": "#cd5c5c",
-            "raisin": "#8b4513",
-            "prune": "#6a4423",
-            "citrus_fruit": "#f1c40f",
-            "lemon": "#f4d03f",
-            "lime": "#2ecc71",
-            "orange": "#e67e22",
-            "grapefruit": "#ff6b6b",
-            "other_fruit": "#e74c3c",
-            "apple": "#dc2d1d",
-            "peach": "#e8957e",
-            "apricot": "#ffb347",
-            "pear": "#d4a574",
-            "pineapple": "#ffd700",
-            "passion_fruit": "#ffc300",
-            "cherry": "#c71585",
-            "pomegranate": "#a71930",
-            "grape": "#7851a9",
-            "coconut": "#e6d5c3",
+            // Layer 2 & 3 - 水果 (鮭魚粉/珊瑚紅系)
+            "berry": "#D05663",
+            "blueberry": "#A0B0C0", // 藍灰色
+            "raspberry": "#E07683",
+            "blackberry": "#B03643",
+            "strawberry": "#E07683",
+            "dried_fruit": "#B03643",
+            "raisin": "#B03643",
+            "prune": "#B03643",
+            "citrus_fruit": "#E0C8A0", // 柔和黃
+            "lemon": "#E8D8B8",
+            "lime": "#94A890",
+            "orange": "#E0C8A0",
+            "grapefruit": "#E07683",
+            "other_fruit": "#D05663",
+            "apple": "#D05663",
+            "peach": "#E07683",
+            "apricot": "#E0C8A0",
+            "pear": "#94A890",
+            "pineapple": "#E0C8A0",
+            "passion_fruit": "#E0C8A0",
+            "cherry": "#B03643",
+            "pomegranate": "#B03643",
+            "grape": "#A0B0C0",
+            "coconut": "#D8C8B8",
 
-            // Layer 2 & 3 - 花香 (粉紅紫色系)
-            "rose": "#e8c0cb",
-            "jasmine": "#f5bde6",
-            "chamomile": "#f4e5d3",
-            "lemongrass": "#d4e157",
-            "osmanthus": "#ffb74d",
-            "orange_blossom": "#ffb74d",
-            "lavender": "#b39ddb",
-            "hibiscus": "#ec407a",
+            // Layer 2 & 3 - 花香 (灰紫色系)
+            "rose": "#B1A0B8",
+            "jasmine": "#C4B8CC",
+            "chamomile": "#E0C8A0", // 柔和黃
+            "lemongrass": "#94A890",
+            "osmanthus": "#C4B8CC",
+            "orange_blossom": "#C4B8CC",
+            "lavender": "#A490AC",
+            "hibiscus": "#D05663",
 
-            // Layer 2 & 3 - 酸味 (黃色系)
-            "fermented": "#f1c40f",
-            "winey": "#c49c63",
-            "fermented_taste": "#e6b89a",
-            "alcohol": "#d4734f",
-            "sour_aromatics": "#f4d03f",
-            "acetic_acid": "#ffe66d",
-            "butyric_acid": "#f0ad4e",
-            "citric_acid": "#fcb900",
-            "isovaleric_acid": "#e8960f",
-            "malic_acid": "#ff9800",
-            "overripe_underripe": "#f1c40f",
-            "overripe": "#f4a46f",
-            "under_ripe": "#cde4b0",
-            "peapod": "#2ecc71",
+            // Layer 2 & 3 - 酸味 (柔和黃系)
+            "fermented": "#E0C8A0",
+            "winey": "#B03643",
+            "fermented_taste": "#E8D8B8",
+            "alcohol": "#E8D8B8",
+            "sour_aromatics": "#E0C8A0",
+            "acetic_acid": "#E8D8B8",
+            "butyric_acid": "#D8C0A0",
+            "citric_acid": "#E8D8B8",
+            "isovaleric_acid": "#D8C0A0",
+            "malic_acid": "#E0C8A0",
+            "overripe_underripe": "#E0C8A0",
+            "overripe": "#D87B56",
+            "under_ripe": "#94A890",
+            "peapod": "#748B6F",
 
-            // Layer 2 & 3 - 綠色/蔬菜 (綠色系)
-            "fresh": "#2ecc71",
-            "dark_green": "#27ae60",
-            "vegetative": "#52be80",
-            "hay_like": "#82c9a3",
-            "herb_like": "#58d68d",
-            "olive_oil": "#3d8b40",
+            // Layer 2 & 3 - 綠色/蔬菜 (灰綠色/鼠尾草綠系)
+            "fresh": "#94A890",
+            "dark_green": "#5A7057",
+            "vegetative": "#748B6F",
+            "hay_like": "#B4C4B0",
+            "herb_like": "#748B6F",
+            "olive_oil": "#5A7057",
 
-            // Layer 2 & 3 - 甜感 (金色/米色系)
-            "brown_sugar": "#daa520",
-            "caramelized": "#f4d03f",
-            "honey": "#ffd700",
-            "molasses": "#8b4513",
-            "maple_syrup": "#d2691e",
-            "brown_sugar_taste": "#cd853f",
-            "vanilla": "#f5deb3",
-            "vanilla_flavor": "#ffe4b5",
-            "vanillin": "#ffe7be",
-            "overall_sweet": "#f4d03f",
-            "sweet_aromatics": "#f4d8a8",
+            // Layer 2 & 3 - 甜感 (陶土色系)
+            "brown_sugar": "#B48A78",
+            "caramelized": "#C4A090",
+            "honey": "#E0C8A0", // 柔和黃
+            "molasses": "#A47A68",
+            "maple_syrup": "#B48A78",
+            "brown_sugar_taste": "#B48A78",
+            "vanilla": "#D8C8B8", // 亞麻色
+            "vanilla_flavor": "#E0D8C8",
+            "vanillin": "#E0D8C8",
+            "overall_sweet": "#B48A78",
+            "sweet_aromatics": "#C4A090",
 
-            // Layer 2 & 3 - 堅果/可可 (褐色系)
-            "nutty": "#d4905a",
-            "almond": "#cd853f",
-            "hazelnut": "#a0826d",
-            "peanuts": "#8b6f47",
-            "cocoa": "#6f4e37",
-            "cocoa_flavor": "#704f38",
-            "dark_chocolate": "#3d2817",
-            "chocolate": "#6f4f38",
+            // Layer 2 & 3 - 堅果/可可 (大地棕系)
+            "nutty": "#A89984",
+            "almond": "#B8A99A",
+            "hazelnut": "#B8A99A",
+            "peanuts": "#A89984",
+            "cocoa": "#A89984",
+            "cocoa_flavor": "#928374", // 深大地棕
+            "dark_chocolate": "#928374",
+            "chocolate": "#928374",
 
-            // Layer 2 & 3 - 香料 (棕紅色系)
-            "brown_spice": "#c4714f",
-            "cinnamon": "#d97f4f",
-            "nutmeg": "#8b4513",
-            "clove": "#5c3317",
-            "anise": "#a0826d",
-            "pepper": "#8b6f47",
+            // Layer 2 & 3 - 香料 (橘紅色系)
+            "brown_spice": "#D87B56",
+            "cinnamon": "#E09B76",
+            "nutmeg": "#C86B46",
+            "clove": "#C86B46",
+            "anise": "#E09B76",
+            "pepper": "#D05663",
 
-            // Layer 2 & 3 - 烘焙 (深棕色系)
-            "cereal": "#c9a965",
-            "grain": "#d4a574",
-            "malt": "#8b6f47",
-            "brown_roast": "#6f4e37",
-            "smoky": "#5c4033",
-            "ashy": "#8b8680",
-            "tobacco": "#704f38",
-            "pipe_tobacco": "#5c3317",
-            "tobacco_flavor": "#4d3c27",
+            // Layer 2 & 3 - 烘焙 (深大地棕系)
+            "cereal": "#A89984", // 大地棕
+            "grain": "#B8A99A",
+            "malt": "#B8A99A",
+            "brown_roast": "#928374",
+            "smoky": "#928374",
+            "ashy": "#C8C0B8", // 亞麻色
+            "tobacco": "#928374",
+            "pipe_tobacco": "#928374",
+            "tobacco_flavor": "#928374",
 
-            // Layer 2 & 3 - 紙味/霉味 (灰色系)
-            "stale": "#95a5a6",
-            "cardboard": "#a9a59f",
-            "papery": "#b8b4ac",
-            "moldy_damp": "#7f8c8d",
-            "musty_dusty": "#95a5a6",
-            "musty_earthy": "#8b7e6b",
-            "woody": "#8b6f47",
+            // Layer 2 & 3 - 紙味/霉味 (灰調松綠色系)
+            "stale": "#80A29C",
+            "cardboard": "#90B2AC",
+            "papery": "#A0C2BC",
+            "moldy_damp": "#70928C",
+            "musty_dusty": "#80A29C",
+            "musty_earthy": "#748B6F", // 維持灰綠色，與植物連結
+            "woody": "#928374", // 改為深大地棕，與烘焙/堅果連結
 
-            // Layer 2 & 3 - 其他 (多色系)
-            "black_tea": "#6f4e37",
-            "phenolic": "#c4714f",
-            "bitter": "#7f8c8d",
-            "salty": "#95a5a6",
-            "medicinal": "#a9a59f",
-            "petroleum": "#34495e",
-            "meaty_brothy": "#8b6f47",
-            "animalic": "#7f6946",
-            "acrid": "#e74c3c",
-            "burnt": "#5c4033",
-            "pungent": "#8b4513",
-            "rubbery": "#5c3a1a",
-            "kunkry": "#4d3c27",
-            "raw": "#dc2d1d",
-            "beany": "#f1c40f",
-            "chemical": "#34495e"
+            // Layer 2 & 3 - 其他 (藍灰色系)
+            "black_tea": "#928374",
+            "phenolic": "#D05663",
+            "bitter": "#A0B0C0",
+            "salty": "#B0C0D0",
+            "medicinal": "#B0C0D0",
+            "petroleum": "#748B6F",
+            "meaty_brothy": "#5A7057",
+            "animalic": "#A89984",
+            "acrid": "#D05663",
+            "burnt": "#928374",
+            "pungent": "#D87B56",
+            "rubbery": "#748B6F",
+            "kunkry": "#A89984",
+            "raw": "#748B6F",
+            "beany": "#94A890",
+            "chemical": "#A0B0C0"
         }
     },
 

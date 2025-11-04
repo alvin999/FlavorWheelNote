@@ -1,0 +1,324 @@
+{
+  "drink_type": "tea",
+  "name": "台湾特色茶風味ホイール 2.0 (最終精密版)",
+  "attribution": {
+    "zh": "資料來源：臺灣特色茶風味輪 2.0 (新型專利第 M605950 號)",
+    "en": "Source: Taiwan Specialty Tea Flavor Wheel 2.0 (R.O.C. Patent no. M605950)",
+    "jp": "出典：台湾特色茶風味ホイール 2.0 (中華民国特許番号 M605950)"
+  },
+  "separator": {
+    "zh": "、",
+    "en": ", ",
+    "jp": "・"
+  },
+  "templates": {
+    "flavor_list": {
+      "zh": "風味清單：{{flavors}}",
+      "en": "Flavors: {{flavors}}",
+      "jp": "風味リスト：{{flavors}}"
+    },
+    "social_note": {
+      "zh": "這款臺灣茶帶有{{flavors}}的風味，令人回味無窮。",
+      "en": "This Taiwan tea features rich {{flavors}} notes, offering a memorable experience.",
+      "jp": "この台湾茶は{{flavors}}の風味を感じられ、印象的な体験でした。"
+    },
+    "ai_prompt": {
+      "zh": "請扮演一位專業的茶藝品評師，用生動且吸引人的方式，為這款來自「{{origin}}」的臺灣特色茶寫一篇約100字的社群分享短文。這款茶的主要風味是：{{flavors}}。請在文案中巧妙地融合這些風味，並營造出令人想親自品茗的氛圍。",
+      "en": "Please act as a professional tea taster. Write a vivid and engaging social media post of about 100 words for this Taiwan specialty tea from '{{origin}}'. The main flavor notes are: {{flavors}}. Please skillfully weave these flavors into the copy and create an atmosphere that makes people want to taste it themselves.",
+      "jp": "プロの茶藝師として、この「{{origin}}」産の台湾特色茶について、約100字の魅力的で生き生きとしたSNS投稿を作成してください。主な風味は{{flavors}}です。これらの風味を巧みに文章に織り込み、読者が自ら味わいたくなるような雰囲気を作り出してください。"
+    }
+  },
+  "children": [
+    {
+      "id": "basic",
+      "layer": 1,
+      "label": {"zh": "基本滋味", "en": "Basic", "jp": "基本的な味"},
+      "index": 1,
+      "children": [
+        {
+          "id": "umami",
+          "layer": 2,
+          "label": {"zh": "鮮味", "en": "Umami", "jp": "うま味"},
+          "children": []
+        },
+        {
+          "id": "sweetness_basic",
+          "layer": 2,
+          "label": {"zh": "甜味", "en": "Sweetness", "jp": "甘味"},
+          "children": []
+        },
+        {
+          "id": "saltiness",
+          "layer": 2,
+          "label": {"zh": "鹹味", "en": "Saltiness", "jp": "塩味"},
+          "children": []
+        },
+        {
+          "id": "sourness_basic",
+          "layer": 2,
+          "label": {"zh": "酸味", "en": "Sourness", "jp": "酸味"},
+          "children": []
+        },
+        {
+          "id": "bitterness_basic",
+          "layer": 2,
+          "label": {"zh": "苦味", "en": "Bitterness", "jp": "苦味"},
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "mouthfeel",
+      "layer": 1,
+      "label": {"zh": "口感", "en": "Mouthfeel", "jp": "口当たり"},
+      "index": 2,
+      "children": [
+        {
+          "id": "purity",
+          "layer": 2,
+          "label": {"zh": "淨潔度", "en": "Purity", "jp": "純度"},
+          "children": [
+            {"id": "fresh", "layer": 3, "label": {"zh": "清爽", "en": "Fresh", "jp": "爽やか"}, "children": []},
+            {"id": "stuffy", "layer": 3, "label": {"zh": "悶", "en": "Stuffy", "jp": "蒸れ"}, "children": []}
+          ]
+
+        },
+        {
+          "id": "fineness",
+          "layer": 2,
+          "label": {"zh": "細緻度", "en": "Fineness", "jp": "きめ細かさ"},
+          "children": [
+            {"id": "fine", "layer": 3, "label": {"zh": "細緻", "en": "Fine", "jp": "きめ細かい"}, "children": []},
+            {"id": "rough", "layer": 3, "label": {"zh": "粗糙", "en": "Rough", "jp": "粗い"}, "children": []}
+          ]
+        },
+        {
+          "id": "smoothness",
+          "layer": 2,
+          "label": {"zh": "滑順度", "en": "Smoothness", "jp": "滑らかさ"},
+          "children": [
+            {"id": "smooth", "layer": 3, "label": {"zh": "滑順", "en": "Smooth", "jp": "滑らか"}, "children": []},
+            {"id": "astringent", "layer": 3, "label": {"zh": "澀", "en": "Astringent", "jp": "渋み"}, "children": []}
+          ]
+        },
+        {
+          "id": "fullness",
+          "layer": 2,
+          "label": {"zh": "飽滿度", "en": "Fullness", "jp": "豊かさ"},
+          "children": [
+            {"id": "thick", "layer": 3, "label": {"zh": "濃郁", "en": "Thick", "jp": "濃厚"}, "children": []},
+            {"id": "thin", "layer": 3, "label": {"zh": "淡薄", "en": "Thin", "jp": "淡白"}, "children": []}
+          ]
+        },
+        {
+          "id": "aftertaste",
+          "layer": 2,
+          "label": {"zh": "餘韻", "en": "Aftertaste", "jp": "後味"},
+          "children": [
+            {"id": "lasting", "layer": 3, "label": {"zh": "持久", "en": "Lasting", "jp": "持続的"}, "children": []},
+            {"id": "brief", "layer": 3, "label": {"zh": "短暫", "en": "Brief", "jp": "短い"}, "children": []}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vegetal",
+      "layer": 1,
+      "label": {"zh": "草本植物", "en": "Vegetal", "jp": "草本植物"},
+      "index": 3,
+      "children": [
+        {
+          "id": "grassy",
+          "layer": 2,
+          "label": {"zh": "青草", "en": "Grassy", "jp": "青草"},
+          "children": [
+            {"id": "grassy_fresh", "layer": 3, "label": {"zh": "青草", "en": "Grassy", "jp": "生草"}, "children": []},
+            {"id": "messona", "layer": 3, "label": {"zh": "仙草", "en": "Mesona", "jp": "仙草"}, "children": []}
+          ]
+        },
+        {
+          "id": "beans",
+          "layer": 2,
+          "label": {"zh": "豆香", "en": "Beans", "jp": "豆の香り"},
+          "children": [
+            {"id": "mung_bean", "layer": 3, "label": {"zh": "綠豆", "en": "Mung bean", "jp": "緑豆"}, "children": []},
+            {"id": "soybean", "layer": 3, "label": {"zh": "黃豆", "en": "Soybean", "jp": "大豆"}, "children": []}
+          ]
+        },
+        {
+          "id": "vegetables",
+          "layer": 2,
+          "label": {"zh": "蔬菜", "en": "Vegetables", "jp": "野菜"},
+          "children": [
+            {"id": "young_corn", "layer": 3, "label": {"zh": "玉米筍", "en": "Young corn", "jp": "ヤングコーン"}, "children": []},
+            {"id": "mushroom", "layer": 3, "label": {"zh": "蕈菇", "en": "Mushroom", "jp": "キノコ"}, "children": []},
+            {"id": "cucumber", "layer": 3, "label": {"zh": "小黃瓜", "en": "Cucumber", "jp": "キュウリ"}, "children": []}
+          ]
+        },
+        {
+          "id": "herbs",
+          "layer": 2,
+          "label": {"zh": "香草", "en": "Herbs", "jp": "ハーブ"},
+          "children": [
+            {"id": "chamomile", "layer": 3, "label": {"zh": "洋甘菊", "en": "Chamomile", "jp": "カモミール"}, "children": []},
+            {"id": "mint", "layer": 3, "label": {"zh": "薄荷", "en": "Mint", "jp": "ミント"}, "children": []}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "floral",
+      "layer": 1,
+      "label": {"zh": "花香", "en": "Floral", "jp": "花の香り"},
+      "index": 4,
+      "children": [
+        {
+          "id": "light_floral",
+          "layer": 2,
+          "label": {"zh": "淡雅花香", "en": "Light", "jp": "淡い花の香り"},
+          "children": [
+            {"id": "orchid", "layer": 3, "label": {"zh": "蘭花", "en": "Orchid", "jp": "蘭"}, "children": []},
+            {"id": "magnolia", "layer": 3, "label": {"zh": "玉蘭花", "en": "Magnolia", "jp": "木蓮"}, "children": []},
+            {"id": "osmanthus", "layer": 3, "label": {"zh": "桂花", "en": "Osmanthus", "jp": "金木犀"}, "children": []},
+            {"id": "jasmine", "layer": 3, "label": {"zh": "茉莉花", "en": "Jasmine", "jp": "ジャスミン"}, "children": []},
+            {"id": "longan_blossom", "layer": 3, "label": {"zh": "龍眼花", "en": "Longan blossom", "jp": "龍眼の花"}, "children": []} 
+          ]
+        },
+        {
+          "id": "strong_floral",
+          "layer": 2,
+          "label": {"zh": "濃郁花香", "en": "Strong", "jp": "濃厚な花の香り"},
+          "children": [
+            {"id": "gardenia", "layer": 3, "label": {"zh": "梔子花", "en": "Gardenia", "jp": "クチナシ"}, "children": []},
+            {"id": "rose", "layer": 3, "label": {"zh": "玫瑰", "en": "Rose", "jp": "バラ"}, "children": []}, 
+            {"id": "white_ginger_lily", "layer": 3, "label": {"zh": "野薑花", "en": "White ginger lily", "jp": "ジンジャーリリー"}, "children": []},
+            {"id": "betel_blossom", "layer": 3, "label": {"zh": "檳榔花", "en": "Betel blossom", "jp": "ビンロウの花"}, "children": []},
+            {"id": "orange_blossom", "layer": 3, "label": {"zh": "橙花", "en": "Orange blossom", "jp": "オレンジの花"}, "children": []},
+            {"id": "pomelo_blossom", "layer": 3, "label": {"zh": "柚花", "en": "Pomelo blossom", "jp": "柚子の花"}, "children": []}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sweet",
+      "layer": 1,
+      "label": {"zh": "甜香", "en": "Sweet", "jp": "甘い香り"},
+      "index": 5,
+      "children": [
+        {
+          "id": "sugary",
+          "layer": 2,
+          "label": {"zh": "糖", "en": "Sugary", "jp": "砂糖"},
+          "children": [
+            {"id": "granulated_sugar", "layer": 3, "label": {"zh": "砂糖","en": "Granulated Sugar", "jp": "ザラメ糖"}, "children": []},
+            {"id": "caramel", "layer": 3, "label": {"zh": "焦糖", "en": "Caramel", "jp": "キャラメル"}, "children": []},
+            {"id": "brown_sugar", "layer": 3, "label": {"zh": "黑糖", "en": "Brown sugar", "jp": "黒糖"}, "children": []},
+            {"id": "candied_melon", "layer": 3, "label": {"zh": "冬瓜糖", "en": "Candied melon", "jp": "冬瓜糖"}, "children": []}
+          ]
+        },
+        {
+          "id": "milky",
+          "layer": 2,
+          "label": {"zh": "奶", "en": "Milky", "jp": "乳製品"},
+          "children": [
+            {"id": "milk", "layer": 3, "label": {"zh": "牛奶", "en": "Milk", "jp": "牛乳"}, "children": []},
+            {"id": "butter", "layer": 3, "label": {"zh": "奶油", "en": "Butter", "jp": "バター"}, "children": []}
+          ]
+        },
+        {
+          "id": "honey",
+          "layer": 2,
+          "label": {"zh": "蜜", "en": "Honey", "jp": "蜜"},
+          "children": [
+            {"id": "honey_desc", "layer": 3, "label": {"zh": "蜂蜜", "en": "Honey", "jp": "蜂蜜"}, "children": []}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fruity",
+      "layer": 1,
+      "label": {"zh": "果香", "en": "Fruity", "jp": "果実の香り"},
+      "index": 6,
+      "children": [
+        {
+          "id": "fresh_fruit",
+          "layer": 2,
+          "label": {"zh": "新鮮水果", "en": "Fresh", "jp": "新鮮な果実"},
+          "children": [
+            {"id": "pear", "layer": 3, "label": {"zh": "梨子", "en": "Pear", "jp": "梨"}, "children": []},
+            {"id": "guava", "layer": 3, "label": {"zh": "芭樂", "en": "Guava", "jp": "グアバ"}, "children": []},
+            {"id": "green_apple", "layer": 3, "label": {"zh": "青蘋果", "en": "Green apple", "jp": "青リンゴ"}, "children": []},
+            {"id": "lemon", "layer": 3, "label": {"zh": "檸檬", "en": "Lemon", "jp": "レモン"}, "children": []}
+          ]
+        },
+        {
+          "id": "ripe_fruit",
+          "layer": 2,
+          "label": {"zh": "成熟水果", "en": "Ripe", "jp": "熟した果実"},
+          "children": [
+            {"id": "peach", "layer": 3, "label": {"zh": "桃子", "en": "Peach", "jp": "桃"}, "children": []},
+            {"id": "mango", "layer": 3, "label": {"zh": "芒果", "en": "Mango", "jp": "マンゴー"}, "children": []},
+            {"id": "lychee", "layer": 3, "label": {"zh": "荔枝", "en": "Lychee", "jp": "ライチ"}, "children": []},
+            {"id": "orange", "layer": 3, "label": {"zh": "橙", "en": "Orange", "jp": "オレンジ"}, "children": []},
+            {"id": "pineapple", "layer": 3, "label": {"zh": "鳳梨", "en": "Pineapple", "jp": "パイナップル"}, "children": []},
+            {"id": "bergamot", "layer": 3, "label": {"zh": "佛手柑", "en": "Bergamot", "jp": "ベルガモット"}, "children": []},
+            {"id": "melon", "layer": 3, "label": {"zh": "香瓜", "en": "Melon", "jp": "メロン"}, "children": []},
+            {"id": "banana", "layer": 3, "label": {"zh": "香蕉", "en": "Banana", "jp": "バナナ"}, "children": []},
+            {"id": "plum", "layer": 3, "label": {"zh": "梅子", "en": "Plum", "jp": "梅"}, "children": []}
+          ]
+        },
+        {
+          "id": "dried_fruit",
+          "layer": 2,
+          "label": {"zh": "乾燥水果", "en": "Dried", "jp": "乾燥果実"},
+          "children": [
+            {"id": "dried_longan", "layer": 3, "label": {"zh": "龍眼乾", "en": "Dried longan", "jp": "乾燥龍眼"}, "children": []},
+            {"id": "dried_plum", "layer": 3, "label": {"zh": "話梅", "en": "Dried plum", "jp": "干し梅"}, "children": []}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "roasted",
+      "layer": 1,
+      "label": {"zh": "焙香", "en": "Roasted", "jp": "焙煎香"},
+      "index": 7,
+      "children": [
+        {
+          "id": "nuts_grains",
+          "layer": 2,
+          "label": {"zh": "堅果/穀物", "en": "Nuts / Grains", "jp": "ナッツ/穀物"},
+          "children": [
+            {"id": "peanut", "layer": 3, "label": {"zh": "花生", "en": "Peanut", "jp": "ピーナッツ"}, "children": []},
+            {"id": "sweet_potato", "layer": 3, "label": {"zh": "地瓜", "en": "Sweet potato", "jp": "さつまいも"}, "children": []},
+            {"id": "rice", "layer": 3, "label": {"zh": "米飯", "en": "Rice", "jp": "ご飯"}, "children": []},
+            {"id": "hazelnut", "layer": 3, "label": {"zh": "榛果", "en": "Hazelnut", "jp": "ヘーゼルナッツ"}, "children": []}
+          ]
+        },
+        {
+          "id": "baked",
+          "layer": 2,
+          "label": {"zh": "烘焙", "en": "Baked", "jp": "焼き菓子"},
+          "children": [
+            {"id": "brown_rice", "layer": 3, "label": {"zh": "玄米", "en": "Brown rice", "jp": "玄米"}, "children": []},
+            {"id": "roasted_barley", "layer": 3, "label": {"zh": "烤大麥", "en": "Roasted barley", "jp": "焙煎大麦"}, "children": []},
+            {"id": "cookie", "layer": 3, "label": {"zh": "餅乾", "en": "Cookie", "jp": "クッキー"}, "children": []},
+            {"id": "chocolate", "layer": 3, "label": {"zh": "巧克力", "en": "Chocolate", "jp": "チョコレート"}, "children": []},
+            {"id": "coffee", "layer": 3, "label": {"zh": "咖啡", "en": "Coffee", "jp": "コーヒー"}, "children": []},
+            {"id": "roasted_chestnut", "layer": 3, "label": {"zh": "烤栗子", "en": "Roasted chestnut", "jp": "焼き栗"}, "children": []}
+          ]
+        },
+        {
+          "id": "smoked",
+          "layer": 2,
+          "label": {"zh": "煙燻", "en": "Smoked", "jp": "燻製香"},
+          "children": [
+            {"id": "smoked_plum", "layer": 3, "label": {"zh": "烏梅", "en": "Smoked plum", "jp": "燻製梅"}, "children": []},
+            {"id": "charcoal", "layer": 3, "label": {"zh": "炭焙", "en": "Charcoal", "jp": "炭火焙煎"}, "children": []}
+          ]
+        }
+      ]
+    }
+  ]
+}

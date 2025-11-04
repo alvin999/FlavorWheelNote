@@ -18,6 +18,11 @@
       "zh": "體驗尊爵不凡的{{flavors}}風味之旅，每一口都是對卓越品質的致敬。",
       "en": "Indulge in the sophisticated {{flavors}} experience, where every sip celebrates excellence.",
       "jp": "{{flavors}}の洗練された体験をお楽しみください。各一口は卓越さへの敬意を表しています。"
+    },
+    "ai_prompt": {
+      "zh": "請扮演一位頂級的美食評論家，用奢華且富有詩意的方式，為這杯來自「{{origin}}」的頂級咖啡寫一篇約100字的社群分享短文。這杯咖啡的主要風味是：{{flavors}}。請在文案中巧妙地融合這些風味，並營造出極致尊榮、令人嚮往的品飲體驗。",
+      "en": "Please act as a top-tier food critic. Write a luxurious and poetic social media post of about 100 words for this premium coffee from '{{origin}}'. The main flavor notes are: {{flavors}}. Please skillfully weave these flavors into the copy and create an atmosphere of ultimate prestige and aspiration.",
+      "jp": "一流の美食評論家として、この「{{origin}}」産の高級コーヒーについて、約100字の豪華で詩的なSNS投稿を作成してください。主な風味は{{flavors}}です。これらの風味を巧みに文章に織り込み、究極の格式と憧れを抱かせるような飲用体験を演出してください。"
     }
   },
   "children": [

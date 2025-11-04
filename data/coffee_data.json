@@ -2,9 +2,9 @@
   "drink_type": "coffee",
   "name": "Coffee Flavor Wheel (SCAA/WCR 2016)",
   "attribution": {
-    "zh": "風味輪資料來自個人經驗，並參考 SCA 與 WCR 發布的咖啡風味輪及世界咖啡研究感官詞典。",
-    "en": "Flavor data is based on personal experience and references the Coffee Taster’s Flavor Wheel and World Coffee Research Sensory Lexicon from the SCA and WCR.",
-    "jp": "風味データは個人の経験に基づき、SCAおよびWCR発行のコーヒーテイスターズフレーバーホイールと世界コーヒー研究感覚レキシコンを参考にしています。"
+    "zh": "風味輪資料來自個人經驗，並參考 SCA 與 WCR 發布的咖啡風味輪、世界咖啡研究感官詞典，以及臺灣特色茶風味輪。",
+    "en": "Flavor data is based on personal experience, referencing the Coffee Taster’s Flavor Wheel (SCA/WCR), the World Coffee Research Sensory Lexicon, and the Taiwan Specialty Tea Flavor Wheel.",
+    "jp": "風味データは個人の経験に基づき、SCAおよびWCR発行のコーヒーテイスターズフレーバーホイール、世界コーヒー研究感覚レキシコン、そして台湾特色茶風味ホイールを参考にしています。"
   },
   "separator": {
     "zh": "、",
@@ -21,6 +21,11 @@
       "zh": "這杯{{origin}}咖啡帶有{{flavors}}的風味，令人回味無窮。",
       "en": "This coffee from {{origin}} features rich {{flavors}} notes, offering a memorable experience.",
       "jp": "{{origin}}産のコーヒーは{{flavors}}の風味を感じられ、印象的な体験でした。"
+    },
+    "ai_prompt": {
+      "zh": "請扮演一位專業的咖啡品評師，用生動且吸引人的方式，為這杯來自「{{origin}}」的咖啡寫一篇約100字的社群分享短文。這杯咖啡的主要風味是：{{flavors}}。請在文案中巧妙地融合這些風味，並營造出令人想親自品嚐的氛圍。",
+      "en": "Please act as a professional coffee taster. Write a vivid and engaging social media post of about 100 words for this coffee from '{{origin}}'. The main flavor notes are: {{flavors}}. Please skillfully weave these flavors into the copy and create an atmosphere that makes people want to taste it themselves.",
+      "jp": "プロのコーヒーテイスターとして、この「{{origin}}」産のコーヒーについて、約100字の魅力的で生き生きとしたSNS投稿を作成してください。主な風味は{{flavors}}です。これらの風味を巧みに文章に織り込み、読者が自ら味わいたくなるような雰囲気を作り出してください。"
     }
   },
   "children": [

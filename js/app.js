@@ -50,22 +50,12 @@ async function loadData() {
         allData['luxury'] = luxuryData;
 
 
-        // 2. 載入 Tea 資料 (如果存在的話，這裡先用一個模擬的空載入，確保架構完整)
-        // 實際部署時，您需要創建 tea_data.json
-        const teaData = {
-          "drink_type": "tea", "name": "Tea Flavor Wheel",
-          "separator": {"zh": "、", "en": ", ", "jp": "・"},
-          "templates": {
-            "flavor_list": {"zh": "茶香：{{flavors}}", "en": "Tea notes: {{flavors}}", "jp": "お茶の風味：{{flavors}}"},
-            "social_note": {"zh": "這壺{{origin}}的茶帶有{{flavors}}的雅韻。", "en": "This tea from {{origin}} features subtle {{flavors}} notes.", "jp": "{{origin}}産のお茶は{{flavors}}の優雅な風味を感じられます。"}
-          },
-          "children": [
-            // 這裡應該是茶的 Layer 1 數據，先用一個佔位符
-            {"id": "tea_floral", "layer": 1, "label": {"zh": "茶花香", "en": "Tea Floral", "jp": "お茶の香り"}, "color": "#a8c0c0", "index": 1, "children": [
-              {"id": "fresh_flower", "layer": 2, "label": {"zh": "鮮花香", "en": "Fresh Flower", "jp": "新鮮な花"}, "children": []}
-            ]}
-          ]
-        };
+        // 3. 載入 Tea 資料
+        const teaResponse = await fetch('./data/tea_data.json');
+        if (!teaResponse.ok) {
+            throw new Error(`Failed to load tea_data.json: ${teaResponse.statusText}`);
+        }
+        const teaData = await teaResponse.json();
         allData['tea'] = teaData;
         
         console.log(loc.data_load_success);
@@ -150,6 +140,8 @@ function setupEventListeners() {
     document.getElementById('theme-switch').addEventListener('click', handleThemeSwitch);
     // 奢華主題切換
     document.getElementById('luxury-theme-switch').addEventListener('click', handleThemeSwitch);
+    // 茶主題切換
+    document.getElementById('tea-theme-switch').addEventListener('click', handleThemeSwitch);
     // 輸出模式切換
     document.getElementById('output-mode-switch').addEventListener('click', handleOutputModeSwitch);
     // 筆記設定輸入框
@@ -196,25 +188,32 @@ function handleDrinkSwitch(event) {
     const drinkButton = event.target.closest('button[data-type]');
     if (drinkButton) {
         const newDrink = drinkButton.dataset.type;
-        populateCategorySelect();
         if (state.currentDrink !== newDrink) {
-            // 如果從非奢華切換到奢華，或反之，需要重設主題
-            if (newDrink === 'luxury' && state.currentDrink !== 'luxury') {
-                state.currentTheme = DEFAULT_LUXURY_THEME; // 預設奢華主題
-            } else if (newDrink !== 'luxury' && state.currentDrink === 'luxury') {
+            // 移除 setTimeout 和手動 opacity 控制，改為直接、同步的更新。
+            // 動畫將在後續步驟中由 D3.js 內部處理。
+
+            // 根據新的飲料類型，設定對應的預設主題
+            if (newDrink === 'coffee') {
+                // 如果目前的主題不是咖啡主題，則重設為預設
+                if (!COLOR_THEMES[state.currentTheme]) {
+                    state.currentTheme = 'default';
+                }
+            } else if (newDrink === 'tea') {
+                state.currentTheme = DEFAULT_TEA_THEME;
+            } else if (newDrink === 'luxury') {
+                state.currentTheme = DEFAULT_LUXURY_THEME;
+            } else {
                 state.currentTheme = 'default'; // 預設一般主題
             }
 
             state.currentDrink = newDrink;
             updateUIControls();
-            // 通知 D3 模組更新資料集
+            populateCategorySelect();
             updateAttributionText();
-            flavorWheelInstance.updateTheme(state.currentTheme); // 切換 drink type 時也更新主題
+            flavorWheelInstance.updateTheme(state.currentTheme);
             flavorWheelInstance.updateData(allData[newDrink]);
-            
-            // 切換風味輪後，不再自動清空列表，而是重新整理顯示和輸出
             updateSelectedFlavorsDisplay();
-            generateOutput(); 
+            generateOutput();
         }
     }
 }
@@ -235,8 +234,8 @@ function handleOutputModeSwitch(event) {
     const modeButton = event.target.closest('button[data-mode]');
     if (modeButton) {
         const newMode = modeButton.dataset.mode;
-        if (state.currentOutputMode !== newMode) {
-            state.currentOutputMode = newMode;
+        if (state.currentOutputMode !== newMode || newMode === 'ai_prompt') { // 允許可重複點擊 AI 模式
+            state.currentOutputMode = newMode; // 總是更新狀態
             updateUIControls();
             generateOutput(); // 重新生成輸出
         }
@@ -245,8 +244,8 @@ function handleOutputModeSwitch(event) {
 
 function handleInputOriginChange(event) {
     state.inputOrigin = event.target.value.trim();
-    if (state.currentOutputMode === 'note') {
-        generateOutput(); // 只有在筆記模式下才需要即時更新
+    if (state.currentOutputMode === 'note' || state.currentOutputMode === 'ai_prompt') {
+        generateOutput(); // 在筆記或 AI 提示詞模式下，當產區變動時即時更新
     }
 }
 
@@ -270,18 +269,35 @@ function handleFlavorSelection(event) {
 }
 
 function handleCopy() {
+    const copyButton = document.getElementById('copy-btn');
     const textarea = document.getElementById('output-textarea');
     textarea.select();
     const loc = window.LOCALIZATION[state.currentLang];
-    try {
-        const successful = document.execCommand('copy');
-        const msg = successful ? loc.copy_success : loc.copy_fail;
-        alert(msg);
-    } catch (err) {
-        navigator.clipboard.writeText(textarea.value)
-            .then(() => alert(loc.copy_success))
-            .catch(err => alert(`${loc.copy_fail}: ${err}`));
-    }
+    const originalText = loc.copy_button;
+    const successText = loc.copy_success_short;
+
+    const showSuccess = () => {
+        copyButton.textContent = successText;
+        copyButton.classList.remove('bg-[#665c54]', 'hover:bg-[#7c6f64]');
+        copyButton.classList.add('bg-[#8ec07c]', 'text-[#3c3836]'); // 使用綠色背景表示成功
+        copyButton.disabled = true;
+
+        setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.classList.remove('bg-[#8ec07c]', 'text-[#3c3836]');
+            copyButton.classList.add('bg-[#665c54]', 'hover:bg-[#7c6f64]');
+            copyButton.disabled = false;
+        }, 2000); // 2秒後恢復
+    };
+
+    const showFail = (err) => {
+        console.error('Copy failed:', err);
+        alert(`${loc.copy_fail}`); // 對於失敗，仍然使用 alert 提示使用者
+    };
+
+    navigator.clipboard.writeText(textarea.value)
+        .then(showSuccess)
+        .catch(showFail);
 }
 
 function handleShare() {
@@ -336,6 +352,7 @@ function toggleAddCustomButton() {
 function handleAddCustomFlavor() {
     const nameInput = document.getElementById('custom-flavor-input');
     const categorySelect = document.getElementById('custom-flavor-category');
+    const addButton = document.getElementById('add-custom-flavor-btn');
     
     const flavorName = nameInput.value.trim();
     const categoryId = categorySelect.value;
@@ -373,7 +390,23 @@ function handleAddCustomFlavor() {
     updateSelectedFlavorsDisplay();
     generateOutput();
     
-    alert(`"${flavorName}" ${window.LOCALIZATION[state.currentLang].flavor_added_alert}`);
+    // 使用按鈕視覺回饋取代 alert
+    const loc = window.LOCALIZATION[state.currentLang];
+    const originalText = loc.add_custom_flavor_button;
+    const successText = `✅ ${loc.flavor_added}`;
+
+    // 顯示成功狀態
+    addButton.textContent = successText;
+    addButton.classList.remove('bg-[#665c54]', 'hover:bg-[#7c6f64]');
+    addButton.classList.add('bg-[#8ec07c]', 'text-[#3c3836]');
+    // 保持禁用狀態
+
+    // 2 秒後恢復按鈕外觀，但保持禁用狀態
+    setTimeout(() => {
+        addButton.textContent = originalText;
+        addButton.classList.remove('bg-[#8ec07c]', 'text-[#3c3836]');
+        addButton.classList.add('bg-[#665c54]', 'hover:bg-[#7c6f64]');
+    }, 2000);
 }
 
 /**
@@ -464,8 +497,15 @@ function updateUILanguage() {
     });
 
     // Update the "Click to select flavor" message
-    document.getElementById('center-display').querySelector('p:last-child').textContent = loc.click_to_select_flavor;
+    const clickToSelectElement = document.getElementById('center-display').querySelector('p:last-child');
+    clickToSelectElement.textContent = loc.click_to_select_flavor;
 
+    // 針對日文版，因為文字較長，所以縮小字體
+    if (lang === 'jp') {
+        clickToSelectElement.classList.replace('text-xs', 'text-[8px]');
+    } else {
+        clickToSelectElement.classList.replace('text-[8px]', 'text-xs');
+    }
     populateCategorySelect(); // 重新填充類別選擇器以更新預設選項
 }
 
@@ -473,12 +513,15 @@ function updateUILanguage() {
  * 更新所有控制項按鈕的選取狀態 (視覺回饋)
  */
 function updateUIControls() {
+    const isCoffee = state.currentDrink === 'coffee';
+    const isTea = state.currentDrink === 'tea';
     const isLuxury = state.currentDrink === 'luxury';
 
     // 根據是否為奢華模式，顯示/隱藏對應的主題切換器
-    document.getElementById('theme-switch').classList.toggle('hidden', isLuxury);
+    document.getElementById('theme-switch').classList.toggle('hidden', !isCoffee);
+    document.getElementById('tea-theme-switch').classList.toggle('hidden', !isTea);
     document.getElementById('luxury-theme-switch').classList.toggle('hidden', !isLuxury);
-
+    
     // 決定當前要操作的主題容器 ID 和高亮顏色
     const currentThemeContainerId = isLuxury ? 'luxury-theme-switch' : 'theme-switch'; 
 
@@ -507,18 +550,64 @@ function updateUIControls() {
     // 主題切換 (根據當前模式更新對應的切換器)
     updateButtons('theme-switch', 'theme', state.currentTheme, 'bg-[#d3869b] text-white', inactiveClass, hoverClass);
     updateButtons('luxury-theme-switch', 'theme', state.currentTheme, 'bg-[#fabd2f] text-[#3c3836]', inactiveClass, hoverClass);
+    updateButtons('tea-theme-switch', 'theme', state.currentTheme, 'bg-[#a6d189] text-[#3c3836]', inactiveClass, hoverClass);
     // 輸出模式切換
     const outputModeInactiveClass = 'text-gray-500 dark:text-gray-400'; // 輸出模式有自己的背景，分開處理
     const outputModeHoverClass = state.isDarkMode
         ? 'dark:hover:bg-[#504945]' // 修正：為暗黑模式的 hover 加上 dark: 前綴
         : 'hover:bg-gray-100';
-    updateButtons('output-mode-switch', 'mode', state.currentOutputMode, 'bg-[#8ec07c] text-[#3c3836]', outputModeInactiveClass, outputModeHoverClass);
+    updateButtons('output-mode-switch', 'mode', state.currentOutputMode, 'bg-[#8ec07c] text-[#3c3836]', outputModeInactiveClass, 'hover:bg-gray-200 dark:hover:bg-[#504945]');
 
     // 4. 集中管理暗黑模式圖示更新
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
     sunIcon.classList.toggle('hidden', state.isDarkMode);
     moonIcon.classList.toggle('hidden', !state.isDarkMode);
+}
+
+/**
+ * 獲取排序後的選取風味列表。
+ * 排序規則：根據風味所屬的 Layer 1 類別的 `index` 屬性。
+ * @returns {Array} 排序後的風味物件陣列。
+ */
+function getSortedSelectedFlavors() {
+    const currentData = allData[state.currentDrink];
+    if (!currentData || !currentData.children) return state.selectedFlavors;
+
+    // 建立一個 Layer 1 ID 到 index 的映射表以便快速查找
+    const l1IndexMap = new Map(currentData.children.map(cat => [cat.id, cat.index]));
+
+    // 輔助函式：獲取單個風味的 L1 index
+    const getFlavorL1Index = (flavor) => {
+        // 對於自訂風味，我們儲存了 L1_id
+        if (flavor.isCustom && flavor.L1_id) {
+            return l1IndexMap.get(flavor.L1_id) || Infinity;
+        }
+
+        // 對於風味輪上的風味，向上查找其 L1 祖先
+        const node = flavorWheelInstance.findNodeById(flavor.id);
+        if (node) {
+            let ancestor = node;
+            while (ancestor.depth > 1 && ancestor.parent) {
+                ancestor = ancestor.parent;
+            }
+            if (ancestor.depth === 1) {
+                return l1IndexMap.get(ancestor.data.id) || Infinity;
+            }
+        }
+        return Infinity; // 如果找不到，排在最後
+    };
+
+    // 創建一個可排序的副本，並為每個風味加上排序索引
+    const sortableFlavors = [...state.selectedFlavors].map(flavor => ({
+        ...flavor,
+        sortIndex: getFlavorL1Index(flavor)
+    }));
+
+    // 執行排序
+    sortableFlavors.sort((a, b) => a.sortIndex - b.sortIndex);
+
+    return sortableFlavors;
 }
 
 /**
@@ -529,8 +618,9 @@ function updateSelectedFlavorsDisplay() {
     const resetButton = document.getElementById('reset-flavors-btn');
     container.innerHTML = '';
     const loc = window.LOCALIZATION[state.currentLang];
+    const sortedFlavors = getSortedSelectedFlavors(); // 獲取排序後的風味
 
-    if (state.selectedFlavors.length === 0) {
+    if (sortedFlavors.length === 0) {
         container.innerHTML = `<p class="text-sm text-gray-400 dark:text-[#a89984]">${loc.no_flavors_selected}</p>`;
         resetButton.classList.add('hidden');
         return;
@@ -538,7 +628,7 @@ function updateSelectedFlavorsDisplay() {
     
     resetButton.classList.remove('hidden'); // 顯示重設按鈕
 
-    state.selectedFlavors.forEach(flavor => {
+    sortedFlavors.forEach(flavor => {
         const flavorLabel = flavor.label[state.currentLang] || flavor.label.en;
         const tag = document.createElement('span');
         tag.dataset.id = flavor.id;
@@ -565,9 +655,17 @@ function updateSelectedFlavorsDisplay() {
             }
 
             if (L1_ID) {
+                const isTeaTheme = Object.keys(TEA_COLOR_THEMES).includes(state.currentTheme);
                 const isLuxuryTheme = Object.keys(LUXURY_COLOR_THEMES).includes(state.currentTheme);
-                const themeSource = isLuxuryTheme ? LUXURY_COLOR_THEMES : COLOR_THEMES;
-                const themePalette = themeSource[state.currentTheme]?.palette || themeSource['default'].palette;
+                let themeSource, defaultThemeId;
+                if (isTeaTheme) {
+                    themeSource = TEA_COLOR_THEMES; defaultThemeId = DEFAULT_TEA_THEME;
+                } else if (isLuxuryTheme) {
+                    themeSource = LUXURY_COLOR_THEMES; defaultThemeId = DEFAULT_LUXURY_THEME;
+                } else {
+                    themeSource = COLOR_THEMES; defaultThemeId = 'default';
+                }
+                const themePalette = themeSource[state.currentTheme]?.palette || themeSource[defaultThemeId].palette;
                 const baseColor = themePalette[L1_ID] || '#E5E7EB'; // 找不到顏色也給個灰色
                 tag.style.backgroundColor = baseColor;
             } else {
@@ -627,7 +725,8 @@ function updateAttributionText() {
 function generateOutput() {
     const data = allData[state.currentDrink];
     const lang = state.currentLang;
-    const flavorLabels = state.selectedFlavors.map(f => f.label[lang] || f.label.en);
+    const sortedFlavors = getSortedSelectedFlavors(); // 獲取排序後的風味
+    const flavorLabels = sortedFlavors.map(f => f.label[lang] || f.label.en);
     const loc = window.LOCALIZATION[lang];
     
     let outputText = "";
@@ -647,19 +746,43 @@ function generateOutput() {
         // 2️⃣ 社群／筆記分享模式
         const template = data.templates.social_note[lang] || data.templates.social_note.en;
         
-        outputText = template 
+        finalOutput = template 
             .replace('{{origin}}', state.inputOrigin || '')
             .replace('{{drink}}', data.drink_type === 'coffee' ? loc.coffee_drink_type : loc.tea_drink_type) // 本地化飲料類型
             .replace('{{flavors}}', flavorsString);
         
-        const aiFriendlyHeader = loc.ai_friendly_header;
-        const aiFriendlyInfo = `${loc.ai_friendly_drink}: ${data.drink_type}\n${loc.ai_friendly_origin}: ${state.inputOrigin || 'N/A'}\n${loc.ai_friendly_flavors} (${lang}): ${flavorsString}\n---\n`;
-        finalOutput = aiFriendlyHeader + aiFriendlyInfo + outputText;
+    } else if (state.currentOutputMode === 'ai_prompt') {
+        // 🤖 AI 筆記助手模式
+        const template = data.templates.ai_prompt[lang] || data.templates.ai_prompt.en;
+        finalOutput = template
+            .replace('{{origin}}', state.inputOrigin || '一款高品質的飲品') // 如果沒有產區，給一個通用描述
+            .replace('{{flavors}}', flavorsString || '多層次的風味'); // 如果沒有風味，給一個通用描述
     }
     
     document.getElementById('output-textarea').value = finalOutput;
 }
 
+
+
+
+
+// --- 啟動程式 ---
+
+// DOM 內容完全載入後，開始載入資料並初始化
+document.addEventListener('DOMContentLoaded', loadData);
+
+// 在 FlavorWheel 類別中新增一個輔助方法
+FlavorWheel.prototype.findNodeById = function(id) {
+    let foundNode = null;
+    // d3.hierarchy 建立的 root 物件有 .each 方法可以遍歷所有節點
+    const root = this.prepareData(this.data);
+    root.each(node => {
+        if (node.data.id === id) {
+            foundNode = node;
+        }
+    });
+    return foundNode;
+};
 
 
 
