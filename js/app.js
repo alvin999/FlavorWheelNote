@@ -801,24 +801,3 @@ FlavorWheel.prototype.findNodeById = function(id) {
     });
     return foundNode;
 };
-
-
-
-
-// --- 啟動程式 ---
-
-// DOM 內容完全載入後，開始載入資料並初始化
-document.addEventListener('DOMContentLoaded', loadData);
-
-// 在 FlavorWheel 類別中新增一個輔助方法
-FlavorWheel.prototype.findNodeById = function(id) {
-    let foundNode = null;
-    // d3.hierarchy 建立的 root 物件有 .each 方法可以遍歷所有節點
-    const root = this.prepareData(this.data);
-    root.each(node => {
-        if (node.data.id === id) {
-            foundNode = node;
-        }
-    });
-    return foundNode;
-};
