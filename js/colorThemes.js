@@ -21,6 +21,8 @@ const COLOR_THEMES = {
             "raspberry": "#E07683",
             "blackberry": "#B03643",
             "strawberry": "#E07683",
+            "red_currant": "#E07683", // 紅醋栗使用與覆盆子/草莓相同的亮紅色
+            "black_currant": "#B03643", // 黑醋栗使用與黑莓相同的深紅色
             "dried_fruit": "#B03643",
             "raisin": "#B03643",
             "prune": "#B03643",
@@ -168,6 +170,8 @@ const COLOR_THEMES = {
             "raspberry": "#d20f39",
             "blackberry": "#9c2d54",
             "strawberry": "#e64980",
+            "red_currant": "#d20f39", // 紅醋栗使用與覆盆子相同的紅色
+            "black_currant": "#9c2d54", // 黑醋栗使用與黑莓相同的深紫色
             "dried_fruit": "#d81b60",
             "raisin": "#8c3f50",
             "prune": "#6a2d42",
@@ -315,6 +319,8 @@ const COLOR_THEMES = {
             "raspberry": "#fb4934",
             "blackberry": "#8f3f71",
             "strawberry": "#fe8019",
+            "red_currant": "#fb4934", // 紅醋栗使用 Gruvbox 的標誌性紅色
+            "black_currant": "#8f3f71", // 黑醋栗使用與黑莓相同的紫色
             "dried_fruit": "#d3869b",
             "raisin": "#a89984",
             "prune": "#928374",

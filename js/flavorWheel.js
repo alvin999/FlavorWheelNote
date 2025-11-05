@@ -3,7 +3,7 @@
  * * 核心 D3.js 模組：負責繪製 Sunburst Chart、處理互動及選取邏輯。
  */
 class FlavorWheel {
-    constructor(selector, initialData, theme, width = 700, centerDiameter = 200) {
+    constructor(selector, initialData, lang, theme, width = 700, centerDiameter = 200) {
         // 確保 D3.js 存在
         if (typeof d3 === 'undefined') {
             console.error("D3.js library is not loaded.");
@@ -19,7 +19,7 @@ class FlavorWheel {
         this.radius = this.width / 2;
         this.centerRadius = dynamicCenterRadius; // 使用動態計算的中心半徑
         this.data = initialData;
-        this.currentLang = 'zh'; // 預設語言
+        this.currentLang = lang || 'zh'; // 使用傳入的語言，若無則使用預設值
         this.currentTheme = theme || 'default';
         this.selectedFlavors = new Map(); // 用來存儲選取的風味: {id: data_object}
         

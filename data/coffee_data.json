@@ -74,7 +74,9 @@
             {"id": "blueberry", "layer": 3, "label": {"zh": "藍莓", "en": "Blueberry", "jp": "ブルーベリー"}, "children": []},
             {"id": "raspberry", "layer": 3, "label": {"zh": "覆盆子", "en": "Raspberry", "jp": "ラズベリー"}, "children": []},
             {"id": "blackberry", "layer": 3, "label": {"zh": "黑莓", "en": "Blackberry", "jp": "ブラックベリー"}, "children": []},
-            {"id": "strawberry", "layer": 3, "label": {"zh": "草莓", "en": "Strawberry", "jp": "イチゴ"}, "children": []}
+            {"id": "strawberry", "layer": 3, "label": {"zh": "草莓", "en": "Strawberry", "jp": "イチゴ"}, "children": []},
+            {"id": "red_currant", "layer": 3, "label": {"zh": "紅醋栗", "en": "Red Currant", "jp": "レッドカラント"}, "children": []},
+            {"id": "black_currant", "layer": 3, "label": {"zh": "黑醋栗", "en": "Black Currant", "jp": "ブラックカラント"}, "children": []}
           ]
         },
         {
@@ -156,7 +158,7 @@
       "index": 4,
       "children": [
         {"id": "fresh", "layer": 2, "label": {"zh": "新鮮", "en": "Fresh", "jp": "新鮮"}, "children": []},
-        {"id": "dark_green", "layer": 2, "label": {"zh": "深綠色", "en": "Dark Green", "jp": "ダークグリーン"}, "children": []},
+        {"id": "dark_green", "layer": 2, "label": {"zh": "濃綠蔬菜", "en": "Dark Green", "jp": "濃い緑野菜"}, "children": []},
         {"id": "vegetative", "layer": 2, "label": {"zh": "蔬菜味", "en": "Vegetative", "jp": "野菜的"}, "children": []},
         {"id": "hay_like", "layer": 2, "label": {"zh": "乾草味", "en": "Hay-like", "jp": "乾草様"}, "children": []},
         {"id": "herb_like", "layer": 2, "label": {"zh": "草本味", "en": "Herb-like", "jp": "ハーブ様"}, "children": []},

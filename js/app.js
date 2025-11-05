@@ -9,14 +9,31 @@
 
 // 應用程式狀態管理
 const state = {
-    currentDrink: 'coffee',
-    currentLang: 'zh',
+    currentDrink: 'coffee', // 預設風味輪
+    currentLang: 'zh', // 預設語言，將會被下面的邏輯覆寫
     currentTheme: 'default',
     currentOutputMode: 'list', // 'list' or 'note'
     selectedFlavors: [],       // [ {id: 'jasmine', label: {zh: '茉莉花', ...}}, ... ]
     inputOrigin: '',
     isDarkMode: false // 1. 新增暗黑模式狀態
 };
+
+// --- 自動語言偵測 ---
+// 在應用程式啟動時，根據瀏覽器語言自動設定 state.currentLang
+(function autoDetectLanguage() {
+    // 移除 langMap，直接偵測標準語言代碼
+    const supportedLangs = ['zh', 'en', 'ja'];
+    // navigator.language 通常回傳如 "en-US", "zh-TW", "ja"
+    // 我們只取前面的語言代碼 "en", "zh", "ja"
+    const browserLang = navigator.language.split('-')[0].toLowerCase();
+
+    if (supportedLangs.includes(browserLang)) {
+        // 如果偵測到標準的 'ja'，將其對應到目前內部使用的 'jp'，以確保相容性。
+        // 這是為了後續將整個專案標準化為 'ja' 的過渡步驟。
+        state.currentLang = (browserLang === 'ja') ? 'jp' : browserLang;
+        console.log(`Browser language detected: ${browserLang}, set app language to: ${state.currentLang}`);
+    }
+})();
 
 let flavorWheelInstance = null;
 let allData = {}; // 儲存所有載入的 JSON 資料 (Coffee, Tea)
@@ -103,6 +120,7 @@ function initializeApp() {
         flavorWheelInstance = new FlavorWheel(
             '#flavor-wheel', 
             initialData, 
+            state.currentLang, // <--- 將偵測到的語言傳遞進去
             state.currentTheme,
             containerWidth,
             centerDiameter / 2
