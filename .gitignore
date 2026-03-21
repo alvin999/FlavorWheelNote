@@ -1,0 +1,7 @@
+# 專案本機開發忽略檔案
+.vscode/settings.json
+*.pem
+*.key
+*.cert
+node_modules/
+.DS_Store
