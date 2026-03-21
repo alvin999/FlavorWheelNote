@@ -1,7 +1,7 @@
 {
-  "name": "Flavor Wheel Note",
-  "short_name": "Flavor Note",
-  "description": "An interactive flavor wheel note-taking tool designed for coffee, tea lovers, and professional cuppers.",
+  "name": "風味輪筆記",
+  "short_name": "風味輪筆記",
+  "description": "專為咖啡、茶品愛好者與品評師設計的互動式風味輪筆記工具。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#282828",

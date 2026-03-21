@@ -6,11 +6,31 @@
     <title data-i18n="app_title">Flavor Wheel Note | 風味輪筆記</title>
     
     <!-- PWA & Icons -->
-    <link rel="manifest" href="manifest.json">
+    <script>
+        (function() {
+            // 偵測語言 (優先讀取 localStorage，次之為瀏覽器語言)
+            let lang = localStorage.getItem('lang') || navigator.language.split('-')[0] || 'en';
+            if (!['zh', 'en', 'jp'].includes(lang)) lang = 'en';
+            
+            const manifestMap = { 'zh': 'manifest_zh.json', 'en': 'manifest_en.json', 'jp': 'manifest_jp.json' };
+            const titleMap = { 'zh': '風味輪筆記', 'en': 'Flavor Wheel Note', 'jp': 'フレーバーホイールノート' };
+            
+            // 動態插入 Manifest 連結
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestMap[lang] || 'manifest_en.json';
+            document.head.appendChild(link);
+            
+            // 動態插入 iOS App 標題
+            const meta = document.createElement('meta');
+            meta.name = 'apple-mobile-web-app-title';
+            meta.content = titleMap[lang] || 'Flavor Wheel Note';
+            document.head.appendChild(meta);
+        })();
+    </script>
     <meta name="theme-color" content="#fe8019">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FlavorNote">
     
     <link rel="icon" type="image/png" href="assets/icons/favicon-32x32.png" sizes="32x32">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
