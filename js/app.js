@@ -15,7 +15,8 @@ const state = {
     currentOutputMode: 'list', // 'list' or 'note'
     selectedFlavors: [],       // [ {id: 'jasmine', label: {zh: '茉莉花', ...}}, ... ]
     inputOrigin: '',
-    isDarkMode: false // 1. 新增暗黑模式狀態
+    isDarkMode: false, // 1. 新增暗黑模式狀態
+    customBg: null // 圖卡自訂背景
 };
 
 // --- 自動語言偵測 ---
@@ -184,6 +185,13 @@ function setupEventListeners() {
     document.getElementById('selected-flavors').addEventListener('click', handleRemoveFlavorTag);
     // 暗黑模式切換
     document.getElementById('dark-mode-toggle').addEventListener('click', handleDarkModeToggle);
+    // 圖卡生成相關
+    document.getElementById('export-img-btn').addEventListener('click', handleExportImage);
+    document.getElementById('upload-bg-btn').addEventListener('click', () => document.getElementById('bg-input').click());
+    document.getElementById('bg-input').addEventListener('change', handleBgFileSelected);
+    document.getElementById('reset-bg-btn').addEventListener('click', handleResetBg);
+    document.getElementById('download-image-btn').addEventListener('click', handleDownloadImage);
+    document.getElementById('close-modal-btn').addEventListener('click', handleCloseModal);
 }
 
 // --- 事件處理函式 ---
@@ -801,3 +809,143 @@ FlavorWheel.prototype.findNodeById = function(id) {
     });
     return foundNode;
 };
+// --- 圖卡生成與圖片處理邏輯 ---
+
+/**
+ * 處理背景圖檔案選取
+ */
+function handleBgFileSelected(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            state.customBg = e.target.result;
+            const uploadBtn = document.getElementById('upload-bg-btn');
+            const resetBtn = document.getElementById('reset-bg-btn');
+            
+            uploadBtn.textContent = '✅ 已選擇背景';
+            resetBtn.classList.remove('hidden');
+            
+            // 同步到模板背景
+            const overlay = document.getElementById('template-bg-overlay');
+            overlay.style.backgroundImage = `url(${state.customBg})`;
+            overlay.style.opacity = '0.6'; 
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+/**
+ * 重設背景圖
+ */
+function handleResetBg() {
+    state.customBg = null;
+    document.getElementById('bg-input').value = '';
+    document.getElementById('upload-bg-btn').textContent = '📁 上傳自訂背景';
+    document.getElementById('reset-bg-btn').classList.add('hidden');
+    document.getElementById('template-bg-overlay').style.backgroundImage = 'none';
+    document.getElementById('template-bg-overlay').style.opacity = '0.4';
+}
+
+/**
+ * 核心：處理圖卡生成
+ */
+async function handleExportImage() {
+    const exportBtn = document.getElementById('export-img-btn');
+    const originalText = exportBtn.textContent;
+    exportBtn.textContent = '⏳ 正在生成...';
+    exportBtn.disabled = true;
+
+    try {
+        const lang = state.currentLang;
+        const template = document.getElementById('share-card-template');
+        
+        // 1. 更新模板文字
+        document.getElementById('template-origin').textContent = state.inputOrigin || (state.currentDrink === 'coffee' ? '精品咖啡' : '特色茶品');
+        
+        // 2. 更新模板風味標籤
+        const flavorsContainer = document.getElementById('template-flavors');
+        flavorsContainer.innerHTML = '';
+        const sortedFlavors = getSortedSelectedFlavors();
+        
+        sortedFlavors.forEach(flavor => {
+            const label = flavor.label[lang] || flavor.label.en;
+            const span = document.createElement('span');
+            span.className = 'text-4xl font-bold px-8 py-4 rounded-full bg-[#fe8019] text-white shadow-lg';
+            span.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+            span.textContent = label;
+            flavorsContainer.appendChild(span);
+        });
+
+        // 3. 克隆風味輪 SVG
+        const wheelContainer = document.getElementById('template-wheel-container');
+        wheelContainer.innerHTML = '';
+        const originalSvg = document.querySelector('#flavor-wheel svg');
+        if (originalSvg) {
+            const clonedSvg = originalSvg.cloneNode(true);
+            clonedSvg.setAttribute('width', '1000');
+            clonedSvg.setAttribute('height', '1000');
+            
+            // 修正 SVG 內部的 CSS 樣式問題
+            clonedSvg.querySelectorAll('.flavor-label').forEach(el => {
+                el.style.fill = '#ffffff';
+                el.style.fontSize = '24px';
+                el.style.fontFamily = 'sans-serif';
+                el.style.textShadow = 'none'; 
+            });
+            wheelContainer.appendChild(clonedSvg);
+        }
+
+        // 4. 呼叫 html2canvas
+        const canvas = await html2canvas(template, {
+            useCORS: true,
+            allowTaint: true,
+            scale: 1, 
+            backgroundColor: '#1d2021',
+            logging: false,
+            width: 1080,
+            height: 1920
+        });
+
+        // 5. 顯示預覽
+        const dataUrl = canvas.toDataURL('image/png');
+        const previewContainer = document.getElementById('preview-image-container');
+        previewContainer.innerHTML = `<img src="${dataUrl}" class="max-w-full h-auto shadow-lg rounded-lg border dark:border-[#504945]">`;
+        
+        const modal = document.getElementById('image-preview-modal');
+        modal.classList.remove('hidden');
+        void modal.offsetWidth;
+        modal.classList.remove('opacity-0');
+
+    } catch (err) {
+        console.error('Image export failed:', err);
+        alert('圖卡生成失敗，這可能是因為瀏覽器限制截圖 SVG，請嘗試重新整理。');
+    } finally {
+        exportBtn.textContent = originalText;
+        exportBtn.disabled = false;
+    }
+}
+
+/**
+ * 下載圖片
+ */
+function handleDownloadImage() {
+    const img = document.querySelector('#preview-image-container img');
+    if (img) {
+        const link = document.createElement('a');
+        link.download = `FlavorNote_${Date.now()}.png`;
+        link.href = img.src;
+        link.click();
+    }
+}
+
+/**
+ * 關閉彈窗
+ */
+function handleCloseModal() {
+    const modal = document.getElementById('image-preview-modal');
+    modal.classList.add('opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
