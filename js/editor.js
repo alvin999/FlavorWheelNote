@@ -44,6 +44,17 @@ const Editor = {
         // 匯出圖片
         document.getElementById('save-editor-btn').addEventListener('click', () => this.exportImage());
 
+        // 分享圖片
+        const shareBtn = document.getElementById('share-editor-btn');
+        if (shareBtn) {
+            if (navigator.share && navigator.canShare) {
+                shareBtn.classList.remove('hidden');
+                shareBtn.addEventListener('click', () => this.shareImage());
+            } else {
+                shareBtn.classList.add('hidden');
+            }
+        }
+
         // 全域指標事件 (用於拖拽/縮放)
         window.addEventListener('pointermove', (e) => this.onPointerMove(e));
         window.addEventListener('pointerup', () => this.onPointerUp());
@@ -387,12 +398,10 @@ const Editor = {
         }
     },
 
-    async exportImage() {
-        const btn = document.getElementById('save-editor-btn');
-        const originalText = btn.textContent;
-        btn.textContent = '⏳ 導出中...';
-        btn.disabled = true;
-
+    /**
+     * 核心畫布產生邏輯 (供匯出與分享共用)
+     */
+    async _generateCanvas() {
         // 暫時移除選取框以免被截圖
         const prevActive = this.activeSticker;
         this.selectSticker(null);
@@ -407,7 +416,25 @@ const Editor = {
                 width: 360,
                 height: 640
             });
+            return canvas;
+        } finally {
+            // 恢復選取狀態
+            this.selectSticker(prevActive);
+        }
+    },
 
+    async exportImage() {
+        const btn = document.getElementById('save-editor-btn');
+        const iconDefault = document.getElementById('save-icon-default');
+        const iconSpinner = document.getElementById('save-icon-spinner');
+        
+        const originalText = btn.textContent;
+        if (iconSpinner) iconSpinner.classList.remove('hidden');
+        if (iconDefault) iconDefault.classList.add('hidden');
+        btn.disabled = true;
+
+        try {
+            const canvas = await this._generateCanvas();
             const dataUrl = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.download = `FlavorSticker_${Date.now()}.png`;
@@ -415,10 +442,52 @@ const Editor = {
             link.click();
         } catch (err) {
             console.error('Editor Export Error:', err);
-            alert('導出失敗，請重試。');
+            const loc = window.LOCALIZATION[state.currentLang];
+            alert(loc.copy_fail || '導出失敗');
         } finally {
-            this.selectSticker(prevActive);
-            btn.textContent = originalText;
+            if (iconSpinner) iconSpinner.classList.add('hidden');
+            if (iconDefault) iconDefault.classList.remove('hidden');
+            btn.disabled = false;
+        }
+    },
+
+    async shareImage() {
+        const btn = document.getElementById('share-editor-btn');
+        const iconDefault = document.getElementById('share-icon-default');
+        const iconSpinner = document.getElementById('share-icon-spinner');
+        
+        if (iconSpinner) iconSpinner.classList.remove('hidden');
+        if (iconDefault) iconDefault.classList.add('hidden');
+        btn.disabled = true;
+
+        try {
+            const canvas = await this._generateCanvas();
+            
+            // 將 Canvas 轉換為 Blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], `FlavorWheel_${Date.now()}.png`, { type: 'image/png' });
+
+            const shareData = {
+                title: window.LOCALIZATION[state.currentLang].app_title,
+                text: 'Check out my flavor profile!',
+                files: [file]
+            };
+
+            if (navigator.canShare && navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+            } else {
+                throw new Error('Web Share API not supporting files on this browser');
+            }
+        } catch (err) {
+            console.error('Editor Share Error:', err);
+            // 如果是使用者取消分享，不跳彈窗
+            if (err.name !== 'AbortError') {
+                const loc = window.LOCALIZATION[state.currentLang];
+                alert(loc.share_fail || '分享失敗');
+            }
+        } finally {
+            if (iconSpinner) iconSpinner.classList.add('hidden');
+            if (iconDefault) iconDefault.classList.remove('hidden');
             btn.disabled = false;
         }
     }

@@ -542,11 +542,19 @@
                     </ul>
                 </div>
 
-                <!-- 匯出按鈕 -->
-                <button id="save-editor-btn"
-                    class="w-full py-4 bg-[#fe8019] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 flex-shrink-0">
-                    <span>✅</span> 匯出精美圖卡
-                </button>
+                <!-- 匯出與分享按鈕 -->
+                <div class="flex flex-col gap-3 flex-shrink-0">
+                    <button id="share-editor-btn"
+                        class="w-full py-4 bg-[#458588] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 hidden">
+                        <span id="share-icon-spinner" class="hidden animate-spin">⏳</span>
+                        <span id="share-icon-default">📤</span> <span data-i18n="share_image_button">分享專屬圖卡</span>
+                    </button>
+                    <button id="save-editor-btn"
+                        class="w-full py-4 bg-[#fe8019] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2">
+                        <span id="save-icon-spinner" class="hidden animate-spin">⏳</span>
+                        <span id="save-icon-default">✅</span> 匯出精美圖卡
+                    </button>
+                </div>
             </div>
         </div>
     </div>
