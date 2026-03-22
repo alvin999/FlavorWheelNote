@@ -102,13 +102,19 @@ function handleVoiceToggle() {
     }
 
     const voiceBtn = document.getElementById('voice-btn-fixed');
+    const loc = window.LOCALIZATION[state.currentLang] || window.LOCALIZATION.en;
 
     if (state.isListening) {
         recognition.stop();
         if (voiceBtn) voiceBtn.classList.remove('voice-wave-active', 'active');
     } else {
         const statusText = document.getElementById('voice-status-text');
-        if (statusText) statusText.textContent = '正在聆聽中...';
+        const statusHint = document.getElementById('voice-status-hint');
+        const statusTitle = document.getElementById('voice-status-title');
+
+        if (statusText) statusText.textContent = loc.voice_start_instruction;
+        if (statusHint) statusHint.textContent = loc.voice_stop_instruction;
+        if (statusTitle) statusTitle.textContent = loc.voice_listening_title;
         
         const langMap = { 'zh': 'zh-TW', 'en': 'en-US', 'jp': 'ja-JP' };
         recognition.lang = langMap[state.currentLang] || 'en-US';
@@ -124,12 +130,19 @@ function handleVoiceToggle() {
 function updateVoiceUI() {
     const voiceBtn = document.getElementById('voice-btn-fixed');
     const statusBar = document.getElementById('voice-status-bar');
+    const loc = window.LOCALIZATION[state.currentLang] || window.LOCALIZATION.en;
     
     if (!voiceBtn || !statusBar) return;
 
     if (state.isListening) {
         voiceBtn.classList.add('active', 'voice-wave-active');
         statusBar.classList.remove('hidden');
+        
+        // 確保重新開啟時標題與提示正確
+        const statusHint = document.getElementById('voice-status-hint');
+        const statusTitle = document.getElementById('voice-status-title');
+        if (statusHint) statusHint.textContent = loc.voice_stop_instruction;
+        if (statusTitle) statusTitle.textContent = loc.voice_listening_title;
     } else {
         voiceBtn.classList.remove('active', 'voice-wave-active');
         // 延遲隱藏狀態列，讓使用者看清最後一個字

@@ -55,7 +55,10 @@ window.LOCALIZATION = {
         "ai_friendly_drink": "飲料",
         "ai_friendly_origin": "產區",
         "ai_friendly_flavors": "風味",
-        "reset_flavors_button": "重設列表"
+        "reset_flavors_button": "重設列表",
+        "voice_start_instruction": "請開始說話描述風味...",
+        "voice_stop_instruction": "再次點擊按鈕可結束辨識",
+        "voice_listening_title": "正在聆聽中..."
     },
     "en": {
         "app_title": "Flavor Wheel Note",
@@ -111,7 +114,10 @@ window.LOCALIZATION = {
         "ai_friendly_drink": "Drink",
         "ai_friendly_origin": "Origin",
         "ai_friendly_flavors": "Flavors",
-        "reset_flavors_button": "Reset List"
+        "reset_flavors_button": "Reset List",
+        "voice_start_instruction": "Start speaking to describe flavors...",
+        "voice_stop_instruction": "Click again to stop recognition",
+        "voice_listening_title": "Listening..."
     },
     "jp": {
         "app_title": "フレーバーホイールノート",
@@ -167,6 +173,9 @@ window.LOCALIZATION = {
         "ai_friendly_drink": "飲み物",
         "ai_friendly_origin": "産地",
         "ai_friendly_flavors": "風味",
-        "reset_flavors_button": "リストをリセット"
+        "reset_flavors_button": "リストをリセット",
+        "voice_start_instruction": "フレーバーを話してください...",
+        "voice_stop_instruction": "もう一度クリックして停止",
+        "voice_listening_title": "聞き取り中..."
     }
 };
