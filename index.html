@@ -193,22 +193,80 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            background: rgba(29, 32, 33, 0.9);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
             padding: 0.75rem 1.5rem;
             border-radius: 9999px;
-            border: 1px solid rgba(254, 128, 25, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(254, 128, 25, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .dark #voice-status-bar {
+            background: rgba(29, 32, 33, 0.85);
+            border-color: rgba(254, 128, 25, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         #voice-status-bar.hidden {
             bottom: -5rem;
             opacity: 0;
-            display: none;
+            pointer-events: none;
+        }
+
+        #voice-status-bar.pwa-active {
+            bottom: 6rem; /* Offset when PWA banner is visible */
+        }
+
+        #voice-btn-fixed {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 50;
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 9999px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(254, 128, 25, 0.1);
+            color: #fe8019;
+            transition: all 0.3s ease;
+        }
+
+        .dark #voice-btn-fixed {
+            background: rgba(80, 73, 69, 0.6);
+            border-color: rgba(254, 128, 25, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #voice-btn-fixed:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark #voice-btn-fixed:hover {
+            background: rgba(102, 110, 100, 0.8);
+        }
+
+        #voice-btn-fixed.active {
+            background: #fe8019;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(254, 128, 25, 0.5);
+        }
+
+        @keyframes wave {
+            0% { box-shadow: 0 0 0 0 rgba(254, 128, 25, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(254, 128, 25, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(254, 128, 25, 0); }
+        }
+
+        .voice-wave-active {
+            animation: wave 2s infinite;
         }
 
         .interim-text {
@@ -310,14 +368,6 @@
                     <p class="text-xs mt-2 text-gray-400 dark:text-[#928374]" data-i18n="click_to_select_flavor">點擊選擇風味
                     </p>
                 </div>
-                <button id="voice-btn"
-                    class="absolute bottom-4 right-4 p-3 bg-white/80 backdrop-blur rounded-full shadow-lg border border-orange-100 text-orange-500 hover:scale-110 active:scale-95 transition-all dark:bg-[#504945]/80 dark:border-orange-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-                    </svg>
-                </button>
             </div>
 
             <div class="space-y-6">
@@ -387,15 +437,27 @@
         </footer>
     </div>
 
+    <!-- 全域語音功能按鈕 (固定於右上角) -->
+    <button id="voice-btn-fixed" title="語音控制 (Voice Control)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+        </svg>
+    </button>
+
     <!-- 全域語音狀態列 -->
     <div id="voice-status-bar" class="hidden">
-        <div class="flex items-center gap-2">
-            <span id="voice-status-icon" class="text-xl animate-bounce">🎤</span>
+        <div class="flex items-center gap-3">
+            <div class="relative flex items-center justify-center">
+                <span id="voice-status-icon" class="text-xl">🎤</span>
+                <span class="absolute inset-0 bg-orange-500 rounded-full animate-ping opacity-20"></span>
+            </div>
             <div class="flex flex-col">
                 <span id="voice-status-title"
-                    class="text-[10px] opacity-60 uppercase tracking-widest text-[#a89984]">Voice Input</span>
-                <div id="voice-transcript-container" class="text-sm">
-                    <span id="voice-status-text">正在聆聽中...</span>
+                    class="text-[9px] font-bold opacity-50 uppercase tracking-[0.2em] text-gray-500 dark:text-[#a89984]">Voice Input</span>
+                <div id="voice-transcript-container" class="text-sm leading-tight max-w-[200px] md:max-w-xs truncate">
+                    <span id="voice-status-text" class="text-gray-700 dark:text-[#ebdbb2]">正在聆聽中...</span>
                 </div>
             </div>
         </div>

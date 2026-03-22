@@ -58,6 +58,7 @@ function showPWAGuidance(isIOS) {
     setTimeout(() => {
         banner.classList.remove('translate-y-20', 'opacity-0');
         banner.classList.add('translate-y-0', 'opacity-100');
+        window.dispatchEvent(new CustomEvent('pwa-banner-show'));
     }, 100);
     
     // Close handler
@@ -65,6 +66,7 @@ function showPWAGuidance(isIOS) {
         banner.classList.remove('translate-y-0', 'opacity-100');
         banner.classList.add('translate-y-20', 'opacity-0');
         sessionStorage.setItem('pwa_guidance_dismissed', 'true');
+        window.dispatchEvent(new CustomEvent('pwa-banner-hide'));
         setTimeout(() => banner.remove(), 500);
     };
 }

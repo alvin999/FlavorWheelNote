@@ -75,10 +75,21 @@ function initVoiceControl() {
     };
 
     // 綁定按鈕點擊
-    const voiceBtn = document.getElementById('voice-btn');
+    const voiceBtn = document.getElementById('voice-btn-fixed');
     if (voiceBtn) {
         voiceBtn.onclick = handleVoiceToggle;
     }
+
+    // 監聽 PWA Banner 事件以調整狀態列位置
+    window.addEventListener('pwa-banner-show', () => {
+        const statusBar = document.getElementById('voice-status-bar');
+        if (statusBar) statusBar.classList.add('pwa-active');
+    });
+
+    window.addEventListener('pwa-banner-hide', () => {
+        const statusBar = document.getElementById('voice-status-bar');
+        if (statusBar) statusBar.classList.remove('pwa-active');
+    });
 }
 
 /**
@@ -90,15 +101,20 @@ function handleVoiceToggle() {
         return;
     }
 
+    const voiceBtn = document.getElementById('voice-btn-fixed');
+
     if (state.isListening) {
         recognition.stop();
+        if (voiceBtn) voiceBtn.classList.remove('voice-wave-active', 'active');
     } else {
         const statusText = document.getElementById('voice-status-text');
         if (statusText) statusText.textContent = '正在聆聽中...';
         
-        const langMap = { 'zh': 'zh-TW', 'en': 'en-US', 'ja': 'ja-JP' };
+        const langMap = { 'zh': 'zh-TW', 'en': 'en-US', 'jp': 'ja-JP' };
         recognition.lang = langMap[state.currentLang] || 'en-US';
         recognition.start();
+
+        if (voiceBtn) voiceBtn.classList.add('voice-wave-active', 'active');
     }
 }
 
@@ -106,21 +122,20 @@ function handleVoiceToggle() {
  * 更新語音相關 UI
  */
 function updateVoiceUI() {
-    const voiceBtn = document.getElementById('voice-btn');
+    const voiceBtn = document.getElementById('voice-btn-fixed');
     const statusBar = document.getElementById('voice-status-bar');
     
     if (!voiceBtn || !statusBar) return;
 
     if (state.isListening) {
-        voiceBtn.classList.add('voice-pulse-active');
-        voiceBtn.classList.replace('text-orange-500', 'text-white');
-        voiceBtn.classList.replace('bg-white/80', 'bg-orange-500');
+        voiceBtn.classList.add('active', 'voice-wave-active');
         statusBar.classList.remove('hidden');
     } else {
-        voiceBtn.classList.remove('voice-pulse-active');
-        voiceBtn.classList.replace('text-white', 'text-orange-500');
-        voiceBtn.classList.replace('bg-orange-500', 'bg-white/80');
-        statusBar.classList.add('hidden');
+        voiceBtn.classList.remove('active', 'voice-wave-active');
+        // 延遲隱藏狀態列，讓使用者看清最後一個字
+        setTimeout(() => {
+            if (!state.isListening) statusBar.classList.add('hidden');
+        }, 1500);
     }
 }
 
