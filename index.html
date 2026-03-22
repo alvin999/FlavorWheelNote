@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title data-i18n="app_title">Flavor Wheel Note | 風味輪筆記</title>
-    
+
     <!-- PWA & Icons -->
     <script>
-        (function() {
+        (function () {
             let lang = localStorage.getItem('lang') || navigator.language.split('-')[0] || 'en';
             if (!['zh', 'en', 'jp'].includes(lang)) lang = 'en';
             const manifestMap = { 'zh': 'manifest_zh.json', 'en': 'manifest_en.json', 'jp': 'manifest_jp.json' };
@@ -26,7 +27,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+
     <link rel="icon" type="image/png" href="assets/icons/favicon-32x32.png" sizes="32x32">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link rel="shortcut icon" href="assets/icons/favicon.ico">
@@ -45,128 +46,342 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <style> 
-        .flavor-arc { stroke: #fff; stroke-width: 1px; cursor: pointer; transition: opacity 0.2s; }
-        .flavor-arc:hover { opacity: 0.85; }
-        .flavor-arc.layer-1 { cursor: default; }
-        .flavor-label { font-family: sans-serif; fill: #fff; pointer-events: none; }
-        .pattern-dots { background-image: radial-gradient(#504945 1px, transparent 1px); background-size: 20px 20px; }
-        .editor-sticker { position: absolute; cursor: grab; user-select: none; touch-action: none; pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1.25rem; border-radius: 9999px; background-color: #fe8019; color: #fff; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: transform 0.1s ease-out; border: 2px solid transparent; }
-        .editor-sticker.selected { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4), 0 0 20px rgba(0, 0, 0, 0.4); }
-        .resize-handle { position: absolute; right: -10px; bottom: -10px; width: 24px; height: 24px; background-color: #fff; border: 2px solid #fe8019; border-radius: 50%; cursor: nwse-resize; display: none; z-index: 10; }
-        .editor-sticker.selected .resize-handle { display: block; }
+    <style>
+        .flavor-arc {
+            stroke: #fff;
+            stroke-width: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .flavor-arc:hover {
+            opacity: 0.85;
+        }
+
+        .flavor-arc.layer-1 {
+            cursor: default;
+        }
+
+        .flavor-label {
+            font-family: sans-serif;
+            fill: #fff;
+            pointer-events: none;
+        }
+
+        .pattern-dots {
+            background-image: radial-gradient(#504945 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .editor-sticker {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            pointer-events: auto !important;
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 1rem;
+            max-width: 320px;
+            transition: transform 0.1s ease-out;
+            border: 2px solid transparent;
+            z-index: 20;
+            background: transparent;
+        }
+
+        .editor-sticker.selected {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4), 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 30;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sticker-tag {
+            display: inline-block;
+            padding: 0.3em 0.8em;
+            border-radius: 9999px;
+            color: #fff;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: -12px;
+            bottom: -12px;
+            width: 28px;
+            height: 28px;
+            background-color: #fff;
+            border: 2px solid #fe8019;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            display: none;
+            z-index: 40;
+            pointer-events: auto !important;
+        }
+
+        .editor-sticker.selected .resize-handle {
+            display: block;
+        }
 
         @media (max-width: 768px) {
-            #editor-modal { flex-direction: column; }
-            .editor-controls-panel { max-height: 40vh; border-left: none; border-top: 1px solid #504945; }
-            #editor-flavor-list { display: flex; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem; gap: 0.5rem; }
-            #editor-flavor-list > button { flex: 0 0 auto; width: auto; min-width: 80px; }
+            #editor-modal {
+                flex-direction: column;
+            }
+
+            .editor-controls-panel {
+                max-height: 40vh;
+                border-left: none;
+                border-top: 1px solid #504945;
+            }
+
+            #editor-flavor-list {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            #editor-flavor-list>button {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: 80px;
+            }
         }
 
         @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.2; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        .voice-pulse-active { position: relative; }
-        .voice-pulse-active::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; background-color: #fe8019; animation: pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite; z-index: -1; }
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
 
-        #voice-status-bar { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 100; background: rgba(29, 32, 33, 0.9); backdrop-filter: blur(8px); padding: 0.75rem 1.5rem; border-radius: 9999px; border: 1px solid rgba(254, 128, 25, 0.3); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; }
-        #voice-status-bar.hidden { bottom: -5rem; opacity: 0; display: none; }
-        .interim-text { color: #a89984; font-style: italic; }
-        .final-text { color: #fe8019; font-weight: bold; }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #504945; border-radius: 10px; }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.2;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .voice-pulse-active {
+            position: relative;
+        }
+
+        .voice-pulse-active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background-color: #fe8019;
+            animation: pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+            z-index: -1;
+        }
+
+        #voice-status-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(29, 32, 33, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(254, 128, 25, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #voice-status-bar.hidden {
+            bottom: -5rem;
+            opacity: 0;
+            display: none;
+        }
+
+        .interim-text {
+            color: #a89984;
+            font-style: italic;
+        }
+
+        .final-text {
+            color: #fe8019;
+            font-weight: bold;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #504945;
+            border-radius: 10px;
+        }
+
+        /* 讓 Select 預設佔位文字顯示為灰色 */
+        select:invalid,
+        select option[value=""] {
+            color: #9ca3af !important;
+        }
+
+        .dark select:invalid,
+        .dark select option[value=""] {
+            color: #a89984 !important;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans dark:bg-[#282828] transition-colors duration-300">
     <div id="app" class="max-w-screen-2xl mx-auto p-4 md:p-8">
         <header class="mb-6 flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-700 dark:text-[#ebdbb2]" data-i18n="app_title">Flavor Wheel Note</h1>
+            <h1 class="text-3xl font-bold text-gray-700 dark:text-[#ebdbb2]" data-i18n="app_title">Flavor Wheel Note
+            </h1>
             <div class="flex flex-wrap justify-center md:justify-end gap-2 mt-4 md:mt-0">
                 <div id="drink-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
-                    <button data-type="coffee" data-i18n="coffee_button" class="p-2 rounded-md bg-[#fe8019] text-white font-semibold transition">☕ 咖啡</button>
-                    <button data-type="tea" data-i18n="tea_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🍵 茶</button>
-                    <button data-type="luxury" data-i18n="luxury_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💎 奢華</button>
+                    <button data-type="coffee" data-i18n="coffee_button"
+                        class="p-2 rounded-md bg-[#fe8019] text-white font-semibold transition">☕ 咖啡</button>
+                    <button data-type="tea" data-i18n="tea_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🍵 茶</button>
+                    <button data-type="luxury" data-i18n="luxury_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">💎 奢華</button>
                 </div>
                 <div id="lang-switch" class="flex p-1 bg-white rounded-lg shadow shrink-0 dark:bg-[#504945]">
-                    <button data-lang="zh" data-i18n="lang_zh_button" class="p-2 rounded-md bg-[#458588] text-white font-semibold transition">中</button>
-                    <button data-lang="en" data-i18n="lang_en_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">EN</button>
-                    <button data-lang="jp" data-i18n="lang_jp_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">日</button>
+                    <button data-lang="zh" data-i18n="lang_zh_button"
+                        class="p-2 rounded-md bg-[#458588] text-white font-semibold transition">中</button>
+                    <button data-lang="en" data-i18n="lang_en_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">EN</button>
+                    <button data-lang="jp" data-i18n="lang_jp_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">日</button>
                 </div>
                 <div id="theme-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
-                    <button data-theme="default" data-i18n="theme_default_button" class="p-2 rounded-md bg-[#d3869b] text-white font-semibold transition">🎨 Default</button>
-                    <button data-theme="catppuccin" data-i18n="theme_catppuccin_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Catppuccin</button>
-                    <button data-theme="gruvbox" data-i18n="theme_gruvbox_button" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Gruvbox</button>
+                    <button data-theme="default" data-i18n="theme_default_button"
+                        class="p-2 rounded-md bg-[#d3869b] text-white font-semibold transition">🎨 Default</button>
+                    <button data-theme="catppuccin" data-i18n="theme_catppuccin_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Catppuccin</button>
+                    <button data-theme="gruvbox" data-i18n="theme_gruvbox_button"
+                        class="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition">🎨 Gruvbox</button>
                 </div>
                 <div id="luxury-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden dark:bg-[#504945]">
-                    <button data-theme="luxury_gold" data-i18n="theme_luxury_gold_button" class="p-2 rounded-md bg-[#fabd2f] text-[#3c3836] font-semibold transition">⚜️ 奢華金</button>
+                    <button data-theme="luxury_gold" data-i18n="theme_luxury_gold_button"
+                        class="p-2 rounded-md bg-[#fabd2f] text-[#3c3836] font-semibold transition">⚜️ 奢華金</button>
                 </div>
                 <div id="tea-theme-switch" class="flex p-1 bg-white rounded-lg shadow mr-2 hidden dark:bg-[#504945]">
-                    <button data-theme="spring_garden" data-i18n="theme_tea_spring_button" class="p-2 rounded-md bg-[#a6d189] text-[#3c3836] font-semibold transition">🌱 春日茶園</button>
+                    <button data-theme="spring_garden" data-i18n="theme_tea_spring_button"
+                        class="p-2 rounded-md bg-[#a6d189] text-[#3c3836] font-semibold transition">🌱 春日茶園</button>
                 </div>
                 <div id="dark-mode-switch" class="flex p-1 bg-white rounded-lg shadow dark:bg-[#504945]">
-                    <button id="dark-mode-toggle" class="p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition">
-                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-orange-400">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                    <button id="dark-mode-toggle"
+                        class="p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition">
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="size-6 text-orange-400">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
                         </svg>
-                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden text-[#ebdbb2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden text-[#ebdbb2]"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
                     </button>
                 </div>
             </div>
         </header>
-                
+
         <main class="grid grid-cols-1 gap-8 items-start">
-            <div class="relative bg-white rounded-xl shadow-lg flavor-wheel-container dark:bg-[#3c3836] overflow-hidden transition-opacity duration-300">
+            <div
+                class="relative bg-white rounded-xl shadow-lg flavor-wheel-container dark:bg-[#3c3836] overflow-hidden transition-opacity duration-300">
                 <div id="flavor-wheel"></div>
-                <div id="center-display" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center px-4">
-                    <p id="current-category" class="text-sm text-gray-500 dark:text-[#a89984]"></p> 
-                    <p id="current-flavor" class="font-bold text-gray-800 dark:text-[#ebdbb2]"></p> 
-                    <p class="text-xs mt-2 text-gray-400 dark:text-[#928374]" data-i18n="click_to_select_flavor">點擊選擇風味</p>
+                <div id="center-display"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center px-4">
+                    <p id="current-category" class="text-sm text-gray-500 dark:text-[#a89984]"></p>
+                    <p id="current-flavor" class="font-bold text-gray-800 dark:text-[#ebdbb2]"></p>
+                    <p class="text-xs mt-2 text-gray-400 dark:text-[#928374]" data-i18n="click_to_select_flavor">點擊選擇風味
+                    </p>
                 </div>
-                <button id="voice-btn" class="absolute bottom-4 right-4 p-3 bg-white/80 backdrop-blur rounded-full shadow-lg border border-orange-100 text-orange-500 hover:scale-110 active:scale-95 transition-all dark:bg-[#504945]/80 dark:border-orange-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" /></svg>
+                <button id="voice-btn"
+                    class="absolute bottom-4 right-4 p-3 bg-white/80 backdrop-blur rounded-full shadow-lg border border-orange-100 text-orange-500 hover:scale-110 active:scale-95 transition-all dark:bg-[#504945]/80 dark:border-orange-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                    </svg>
                 </button>
             </div>
 
             <div class="space-y-6">
                 <div class="bg-white p-5 rounded-xl shadow-lg dark:bg-[#3c3836]">
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-lg font-semibold text-gray-700 dark:text-[#ebdbb2]" data-i18n="selected_flavors_title">選取風味列表</h4>
-                        <button id="reset-flavors-btn" class="text-sm text-gray-500 hover:text-red-600 dark:text-[#a89984] dark:hover:text-[#fb4934] transition hidden" data-i18n="reset_flavors_button">重設列表</button>
+                        <h4 class="text-lg font-semibold text-gray-700 dark:text-[#ebdbb2]"
+                            data-i18n="selected_flavors_title">選取風味列表</h4>
+                        <button id="reset-flavors-btn"
+                            class="text-sm text-gray-500 hover:text-red-600 dark:text-[#a89984] dark:hover:text-[#fb4934] transition hidden"
+                            data-i18n="reset_flavors_button">重設列表</button>
                     </div>
-                    <div id="selected-flavors" class="min-h-[50px] p-3 border rounded-lg bg-gray-50 space-y-1 dark:bg-[#282828] dark:border-[#665c54]">
-                        <p class="text-sm text-gray-400 dark:text-[#a89984]" data-i18n="no_flavors_selected">尚未選取任何風味...</p>
+                    <div id="selected-flavors"
+                        class="min-h-[50px] p-3 border rounded-lg bg-gray-50 space-y-1 dark:bg-[#282828] dark:border-[#665c54]">
+                        <p class="text-sm text-gray-400 dark:text-[#a89984]" data-i18n="no_flavors_selected">尚未選取任何風味...
+                        </p>
                     </div>
-                    <h2 class="text-xl font-semibold mt-4 mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="generate_note_title">生成筆記</h2>
+                    <h2 class="text-xl font-semibold mt-4 mb-3 text-gray-700 dark:text-[#ebdbb2]"
+                        data-i18n="generate_note_title">生成筆記</h2>
                     <div id="output-mode-switch" class="flex mb-3 p-1 bg-gray-100 rounded-lg dark:bg-[#282828]">
-                        <button data-mode="list" class="flex-1 p-2 rounded-md text-sm hover:bg-gray-100" data-i18n="output_mode_list">1️⃣ 純風味文字</button>
-                        <button data-mode="note" class="flex-1 p-2 rounded-md bg-[#8ec07c] text-[#3c3836] text-sm font-medium" data-i18n="output_mode_note">2️⃣ 社群分享模式</button>
-                        <button data-mode="ai_prompt" class="flex-1 p-2 rounded-md text-sm hover:bg-gray-100" data-i18n="output_mode_ai_prompt">🤖 AI 筆記助手</button>
+                        <button data-mode="list" class="flex-1 p-2 rounded-md text-sm hover:bg-gray-100"
+                            data-i18n="output_mode_list">1️⃣ 純風味文字</button>
+                        <button data-mode="note"
+                            class="flex-1 p-2 rounded-md bg-[#8ec07c] text-[#3c3836] text-sm font-medium"
+                            data-i18n="output_mode_note">2️⃣ 社群分享模式</button>
+                        <button data-mode="ai_prompt" class="flex-1 p-2 rounded-md text-sm hover:bg-gray-100"
+                            data-i18n="output_mode_ai_prompt">🤖 AI 筆記助手</button>
                     </div>
-                    <textarea id="output-textarea" rows="6" class="w-full p-3 border rounded-lg resize-none text-sm font-mono bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]" readonly></textarea>
-                    <button id="copy-btn" class="w-full mt-3 py-2 px-4 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg hover:bg-[#7c6f64] transition" data-i18n="copy_button">📋 複製到剪貼簿</button>
-                    <button id="share-btn" class="w-full mt-2 py-2 px-4 bg-[#458588] text-white font-bold rounded-lg hover:bg-[#83a598] transition hidden" data-i18n="share_button">🔗 分享</button>
-                    <button id="open-editor-btn" class="w-full mt-2 py-2 px-4 border-2 border-[#b16286] text-[#b16286] font-bold rounded-lg hover:bg-[#b16286] hover:text-white transition" data-i18n="open_editor_button">🎨 進入貼紙編輯模式</button>
+                    <textarea id="output-textarea" rows="6"
+                        class="w-full p-3 border rounded-lg resize-none text-sm font-mono bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]"
+                        readonly></textarea>
+                    <button id="copy-btn"
+                        class="w-full mt-3 py-2 px-4 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg hover:bg-[#7c6f64] transition"
+                        data-i18n="copy_button">📋 複製到剪貼簿</button>
+                    <button id="share-btn"
+                        class="w-full mt-2 py-2 px-4 bg-[#458588] text-white font-bold rounded-lg hover:bg-[#83a598] transition hidden"
+                        data-i18n="share_button">🔗 分享</button>
+                    <button id="open-editor-btn"
+                        class="w-full mt-2 py-2 px-4 border-2 border-[#b16286] text-[#b16286] font-bold rounded-lg hover:bg-[#b16286] hover:text-white transition"
+                        data-i18n="open_editor_button">🎨 進入貼紙編輯模式</button>
                 </div>
-                
+
                 <div class="bg-white p-5 rounded-xl shadow-lg dark:bg-[#3c3836]">
-                    <h2 class="text-xl font-semibold mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="settings_title">筆記設定與自訂風味</h2>
-                    <label for="input-origin" class="block mb-2 text-sm font-medium text-gray-700 dark:text-[#d5c4a1]" data-i18n="origin_label">品名 / 產區 (Origin)</label>
-                    <input type="text" id="input-origin" data-i18n-placeholder="origin_placeholder" placeholder="e.g. Ethiopia Yirgacheffe" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]">
-                    <h3 class="text-lg font-medium mb-3 text-gray-700 border-t pt-4 dark:text-[#ebdbb2] dark:border-gray-600" data-i18n="add_custom_flavor_heading">手動新增自訂風味</h3>
-                    <input type="text" id="custom-flavor-input" data-i18n-placeholder="custom_flavor_name_placeholder" placeholder="風味名稱" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945]">
-                    <select id="custom-flavor-category" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945]">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700 dark:text-[#ebdbb2]" data-i18n="settings_title">
+                        筆記設定與自訂風味</h2>
+                    <label for="input-origin" class="block mb-2 text-sm font-medium text-gray-700 dark:text-[#d5c4a1]"
+                        data-i18n="origin_label">品名 / 產區 (Origin)</label>
+                    <input type="text" id="input-origin" data-i18n-placeholder="origin_placeholder"
+                        placeholder="e.g. Ethiopia Yirgacheffe"
+                        class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700 border-t pt-4 dark:text-[#ebdbb2] dark:border-gray-600"
+                        data-i18n="add_custom_flavor_heading">手動新增自訂風味</h3>
+                    <input type="text" id="custom-flavor-input" data-i18n-placeholder="custom_flavor_name_placeholder"
+                        placeholder="風味名稱" class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945]">
+                    <select id="custom-flavor-category" required
+                        class="w-full p-2 border rounded-lg mb-4 bg-gray-50 dark:bg-[#504945] dark:border-[#665c54] dark:text-[#ebdbb2]">
                         <option value="" data-i18n="select_category_default">-- 請選擇 Layer 1 大類別 --</option>
                     </select>
-                    <button id="add-custom-flavor-btn" class="w-full py-2 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg" data-i18n="add_custom_flavor_button" disabled>➕ 新增自訂風味</button>
+                    <button id="add-custom-flavor-btn"
+                        class="w-full py-2 bg-[#665c54] text-[#ebdbb2] font-bold rounded-lg"
+                        data-i18n="add_custom_flavor_button" disabled>➕ 新增自訂風味</button>
                 </div>
             </div>
         </main>
-        
+
         <footer class="text-center mt-8 text-xs text-gray-500 max-w-4xl mx-auto dark:text-[#a89984]">
             <p id="attribution-text" class="leading-relaxed"></p>
         </footer>
@@ -177,7 +392,8 @@
         <div class="flex items-center gap-2">
             <span id="voice-status-icon" class="text-xl animate-bounce">🎤</span>
             <div class="flex flex-col">
-                <span id="voice-status-title" class="text-[10px] opacity-60 uppercase tracking-widest text-[#a89984]">Voice Input</span>
+                <span id="voice-status-title"
+                    class="text-[10px] opacity-60 uppercase tracking-widest text-[#a89984]">Voice Input</span>
                 <div id="voice-transcript-container" class="text-sm">
                     <span id="voice-status-text">正在聆聽中...</span>
                 </div>
@@ -186,50 +402,95 @@
     </div>
 
     <!-- 進階圖卡產生器 Modal -->
-    <div id="editor-modal" class="fixed inset-0 z-[60] hidden bg-[#1d2021]/95 backdrop-blur-md overflow-hidden flex flex-col md:flex-row">
+    <div id="editor-modal"
+        class="fixed inset-0 z-[60] hidden bg-[#1d2021]/95 backdrop-blur-md overflow-hidden flex flex-col md:flex-row">
         <div class="flex-1 flex items-center justify-center p-4 overflow-hidden bg-[#282828] pattern-dots relative">
             <div id="canvas-scaler" class="relative flex items-center justify-center w-full h-full">
-                <div id="editor-canvas" class="relative w-[360px] h-[640px] bg-[#1d2021] shadow-2xl overflow-hidden flex-shrink-0 origin-center" style="background-size: cover; background-position: center;">
-                    <div id="editor-bg-layer" class="absolute inset-0 opacity-40"></div>
-                    <div id="sticker-container" class="absolute inset-0 pointer-events-none"></div>
+                <div id="editor-canvas"
+                    class="relative w-[360px] h-[640px] bg-[#1d2021] shadow-2xl overflow-hidden flex-shrink-0 origin-center">
+                    <div id="editor-bg-container" class="absolute inset-0 overflow-hidden pointer-events-none">
+                        <img id="editor-bg-img" class="absolute transition-none"
+                            style="display: none; left: 50%; top: 50%; width: auto; height: auto; max-width: none; max-height: none;">
+                    </div>
+                    <div id="editor-bg-layer" class="absolute inset-0 opacity-40 bg-[#3c3836]"></div>
+                    <div id="sticker-container" class="absolute inset-0 pointer-events-none z-20"></div>
                 </div>
             </div>
         </div>
-        <div class="editor-controls-panel w-full md:w-80 bg-[#3c3836] border-l border-[#504945] p-6 text-[#ebdbb2] flex flex-col shadow-xl">
+        <div
+            class="editor-controls-panel w-full md:w-80 bg-[#3c3836] border-l border-[#504945] p-6 text-[#ebdbb2] flex flex-col shadow-xl">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold flex items-center gap-2"><span class="text-2xl">🎨</span> 貼紙編輯器</h3>
                 <button id="close-editor-btn" class="p-2 hover:bg-[#504945] rounded-full transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
-            <div class="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <div>
-                    <label class="block text-sm font-medium mb-2 opacity-70">1. 背景設定</label>
-                    <button id="editor-upload-bg-btn" class="w-full py-3 px-4 bg-[#504945] hover:bg-[#665c54] rounded-lg text-sm">🖼️ 更換背景圖片</button>
+            <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-6">
+                <!-- 畫布背景 -->
+                <div class="space-y-4">
+                    <button id="editor-upload-bg-btn"
+                        class="w-full py-4 px-4 bg-[#504945] hover:bg-[#665c54] rounded-xl text-sm transition flex items-center justify-center gap-2 border border-[#665c54]">
+                        <span>🖼️</span> 更換背景圖片
+                    </button>
                     <input type="file" id="editor-bg-input" class="hidden" accept="image/*">
+
+                    <!-- 背景調整控制項 -->
+                    <div id="bg-adjust-controls"
+                        class="hidden space-y-4 p-4 bg-[#282828] rounded-xl border border-[#504945]">
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] uppercase tracking-wider opacity-60">
+                                <span>🔍 縮放 (Zoom)</span>
+                                <span id="bg-zoom-val">100%</span>
+                            </div>
+                            <input type="range" id="bg-zoom-slider" min="1" max="3" step="0.01" value="1"
+                                class="w-full h-1.5 bg-[#504945] rounded-lg appearance-none cursor-pointer accent-[#fe8019]">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <span class="text-[10px] uppercase tracking-wider opacity-60">↔️ 水平位移</span>
+                                <input type="range" id="bg-x-slider" min="-200" max="200" step="1" value="0"
+                                    class="w-full h-1.5 bg-[#504945] rounded-lg appearance-none cursor-pointer accent-[#fe8019]">
+                            </div>
+                            <div class="space-y-2">
+                                <span class="text-[10px] uppercase tracking-wider opacity-60">↕️ 垂直位移</span>
+                                <input type="range" id="bg-y-slider" min="-300" max="300" step="1" value="0"
+                                    class="w-full h-1.5 bg-[#504945] rounded-lg appearance-none cursor-pointer accent-[#fe8019]">
+                            </div>
+                        </div>
+                        <button id="reset-bg-adj-btn"
+                            class="w-full py-1 text-[10px] text-gray-500 hover:text-gray-300 transition">重設位置與縮放</button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2 opacity-70">2. 風味貼紙 (點擊選取)</label>
-                    <div id="editor-flavor-list" class="grid grid-cols-2 gap-2"></div>
-                </div>
-                <div class="p-4 bg-[#282828] rounded-xl border border-orange-500/20">
-                    <p class="text-[10px] text-orange-400 font-medium mb-1 uppercase tracking-wider">💡 操作提示</p>
-                    <ul class="text-xs space-y-2 opacity-80 list-disc list-inside">
+
+                <!-- 操作提示 -->
+                <div class="p-4 bg-[#282828] rounded-xl border border-orange-500/20 mt-auto">
+                    <p
+                        class="text-[10px] text-orange-400 font-medium mb-2 uppercase tracking-wider flex items-center gap-1">
+                        <span class="animate-pulse">💡</span> 操作提示
+                    </p>
+                    <ul class="text-[11px] space-y-2 opacity-80 list-disc list-inside text-gray-300">
                         <li>按住貼紙可自由**拖曳**位置</li>
-                        <li>選中貼紙後可調整**大小**</li>
-                        <li>點擊貼紙可進行選取/取消選取</li>
+                        <li>直接在畫布上**拖曳背景**可調整位置</li>
+                        <li>選中貼紙後透過右下角控制點**縮放**</li>
+                        <li>點擊貼紙可進行**選取/取消**</li>
                     </ul>
                 </div>
-            </div>
-            <div class="mt-6 pt-6 border-t border-[#504945]">
-                <button id="save-editor-btn" class="w-full py-4 bg-[#fe8019] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] transition-all text-lg">✅ 匯出精美圖卡</button>
+
+                <!-- 匯出按鈕 -->
+                <button id="save-editor-btn"
+                    class="w-full py-4 bg-[#fe8019] text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 flex-shrink-0">
+                    <span>✅</span> 匯出精美圖卡
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 腳本加載 -->
     <script src="js/localization.js"></script>
-    <script src="js/colorThemes.js"></script> 
+    <script src="js/colorThemes.js"></script>
     <script src="js/luxuryColorThemes.js"></script>
     <script src="js/teaColorThemes.js"></script>
     <script src="js/flavorWheel.js"></script>
@@ -238,4 +499,5 @@
     <script src="js/app.js"></script>
     <script src="js/editor.js"></script>
 </body>
+
 </html>

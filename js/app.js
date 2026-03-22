@@ -630,6 +630,35 @@ function getSortedSelectedFlavors() {
     return sortableFlavors;
 }
 
+// --- 輔助資料：類別圖示映射表 ---
+const CATEGORY_ICONS = {
+    // 咖啡 / 通用
+    "fruity": "🍎",
+    "floral": "🌸",
+    "sour": "🍋",
+    "green_vegetative": "🌿",
+    "sweet": "🍯",
+    "nutty_cocoa": "🍫",
+    "spices": "🌶️",
+    "roasted": "☕",
+    "papery_musty": "📦",
+    "other": "🔍",
+    
+    // 奢華版特定
+    "exotic_fruits": "🥭",
+    "floral_bouquet": "💐",
+    "gourmet_sweets": "🍬",
+    "spice_elegance": "🥨",
+    "premium_nuts": "🥜",
+    "aromatic_warmth": "🪵",
+    "refined_elegance": "💎",
+    
+    // 茶葉版特定
+    "basic": "👅",
+    "mouthfeel": "👄",
+    "vegetal": "🌱"
+};
+
 /**
  * 更新選取風味列表 (底下的標籤視覺化)
  */
@@ -710,14 +739,38 @@ function populateCategorySelect() {
     const currentData = allData[state.currentDrink];
     if (!currentData || !currentData.children) return;
 
+    // 取得目前主題的調色盤，用以顯示顏色點
+    const isTeaTheme = Object.keys(TEA_COLOR_THEMES).includes(state.currentTheme);
+    const isLuxuryTheme = Object.keys(LUXURY_COLOR_THEMES).includes(state.currentTheme);
+    let themeSource, defaultThemeId;
+    if (isTeaTheme) {
+        themeSource = TEA_COLOR_THEMES; defaultThemeId = DEFAULT_TEA_THEME;
+    } else if (isLuxuryTheme) {
+        themeSource = LUXURY_COLOR_THEMES; defaultThemeId = DEFAULT_LUXURY_THEME;
+    } else {
+        themeSource = COLOR_THEMES; defaultThemeId = 'default';
+    }
+    const themePalette = themeSource[state.currentTheme]?.palette || themeSource[defaultThemeId].palette;
+
     // 填充 Layer 1 類別作為選項
     currentData.children.forEach(category => {
         if (category.layer === 1) {
             const option = document.createElement('option');
             // 使用 Layer 1 的 ID 作為值 (value)
             option.value = category.id; 
-            // 顯示當前語言的標籤
-            option.textContent = category.label[state.currentLang] || category.label.en;
+            
+            // 獲取圖示與顏色
+            const icon = CATEGORY_ICONS[category.id] || "📍";
+            const color = themePalette[category.id] || "#cccccc";
+            
+            // 顯示格式：● 圖示 名稱
+            // 注意：option 內的 HTML 支援度有限，這裡使用 Unicode 實心圓點來模擬顏色
+            const categoryLabel = category.label[state.currentLang] || category.label.en;
+            option.textContent = `● ${icon} ${categoryLabel}`;
+            
+            // 嘗試設定顏色（部分瀏覽器支援）
+            option.style.color = color;
+            
             select.appendChild(option);
         }
     });
