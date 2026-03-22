@@ -414,7 +414,21 @@ const Editor = {
                 useCORS: true,
                 allowTaint: true,
                 width: 360,
-                height: 640
+                height: 640,
+                scrollX: 0,
+                scrollY: 0,
+                x: 0,
+                y: 0,
+                onclone: (clonedDoc) => {
+                    // 在克隆的 DOM 中重置縮放，確保 html2canvas 能精確捕捉 360x640 區域
+                    const clonedCanvas = clonedDoc.getElementById('editor-canvas');
+                    if (clonedCanvas) {
+                        clonedCanvas.style.transform = 'none';
+                        clonedCanvas.style.position = 'absolute';
+                        clonedCanvas.style.left = '0';
+                        clonedCanvas.style.top = '0';
+                    }
+                }
             });
             return canvas;
         } finally {
